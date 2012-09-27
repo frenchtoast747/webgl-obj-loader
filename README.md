@@ -18,3 +18,6 @@ Takes in obj file data and loads a mesh.
 ## Features to come later:
 
 * actual texture coordinates
+
+## Demo
+http://frenchtoast747.github.com/WebGL-Obj-Loader/
