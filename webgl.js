@@ -70,12 +70,14 @@
 
       shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
       gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-      shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
-      gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+      
+      // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+      // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
       shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
       shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+      shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+      shaderProgram.lightingDirectionUniform = gl.getUniformLocation(shaderProgram, "uLightingDirection");
   }
 
 
@@ -100,6 +102,11 @@
   function setMatrixUniforms() {
       gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
       gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+      
+      var normalMatrix = mat3.create();
+      mat4.toInverseMat3(mvMatrix, normalMatrix);
+      mat3.transpose(normalMatrix);
+      gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
   }
 
 
@@ -118,6 +125,12 @@
       modelVertexPositionBuffer.itemSize = 3;
       modelVertexPositionBuffer.numItems = ball.verts.length / modelVertexPositionBuffer.itemSize;
 
+      modelVertexNormalBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexNormalBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ball.vertNormals), gl.STATIC_DRAW);
+      modelVertexNormalBuffer.itemSize = 3;
+      modelVertexNormalBuffer.numItems = ball.vertNormals.length / modelVertexNormalBuffer.itemSize;
+      
       modelVertexIndexBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ball.vertexIndexArray), gl.STATIC_DRAW);
@@ -146,8 +159,22 @@
 
       gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexPositionBuffer);
       gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, modelVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
+      
+      // gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexNormalBuffer);
+      // gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, modelVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+      
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
+      
+      var lightingDirection = [
+                parseFloat(document.getElementById("lightDirectionX").value),
+                parseFloat(document.getElementById("lightDirectionY").value),
+                parseFloat(document.getElementById("lightDirectionZ").value)
+            ];
+      var adjustedLD = vec3.create();
+      vec3.normalize(lightingDirection, adjustedLD);
+      vec3.scale(adjustedLD, -1);
+      
+      // gl.uniform3fv(shaderProgram.lightingDirectionUniform, adjustedLD);
       setMatrixUniforms();
       gl.drawElements(gl.TRIANGLES, modelVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -178,7 +205,7 @@
 
 
   function webGLStart() {
-      ball = new Mesh(document.getElementById("objectData").innerText);
+      ball = new Mesh(document.getElementById("objectData").innerHTML);
       var canvas = document.getElementById("mycanvas");
       initGL(canvas);
       initShaders()
