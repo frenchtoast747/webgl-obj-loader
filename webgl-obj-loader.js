@@ -11,7 +11,7 @@ if (typeof String.prototype.startsWith !== 'function') {
 // precompile the regexes
 // var floatsRegEx = /[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?/
 
-function Mesh( idOrString, flag ){
+function Mesh( objectData ){
     /*
         With the given elementID or string of the OBJ, this parses the
         OBJ and creates the mesh.
@@ -27,7 +27,7 @@ function Mesh( idOrString, flag ){
     this.vertexNormalIndexArray = new Array();
     
     // array of lines separated by the newline
-    var lines = ( flag === 'string' ? idOrString : document.getElementById( idOrString ).innerText ).split( '\n' )
+    var lines = objectData.split( '\n' )
     for( var i=0; i<lines.length; i++ ){
       // if this is a vertex
       if( lines[ i ].startsWith( 'v ' ) ){

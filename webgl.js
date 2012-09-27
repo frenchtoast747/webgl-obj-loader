@@ -178,7 +178,7 @@
 
 
   function webGLStart() {
-      ball = new Mesh( 'ball' );
+      ball = new Mesh(document.getElementById("objectData").innerText);
       var canvas = document.getElementById("mycanvas");
       initGL(canvas);
       initShaders()
