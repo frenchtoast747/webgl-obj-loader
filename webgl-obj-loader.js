@@ -38,8 +38,7 @@ function Mesh( objectData ){
       }
       // if this is a vertex normal
       else if( lines[ i ].startsWith( 'vn' ) ){
-        line = lines[ i ].slice( 3 ).split( " " )
-        this.vertNormals.push( line );
+        this.vertNormals.push( lines[ i ].slice( 3 ).split( " " ) );
       }
       // if this is a face
       else if( lines[ i ].startsWith( 'f ' ) ){
@@ -63,8 +62,6 @@ function Mesh( objectData ){
     }
     // set vertNormals to the newly created array
     this.vertNormals = newVN;
-    console.log("Verts: " + this.vertexIndexArray);
-    console.log("Normals: " + this.vertNormals);
 }
 
 
