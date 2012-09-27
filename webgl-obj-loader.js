@@ -39,9 +39,7 @@ function Mesh( objectData ){
       // if this is a vertex normal
       else if( lines[ i ].startsWith( 'vn' ) ){
         line = lines[ i ].slice( 3 ).split( " " )
-        this.vertNormals.push( line[ 0 ] );
-        this.vertNormals.push( line[ 1 ] );
-        this.vertNormals.push( line[ 2 ] );
+        this.vertNormals.push( line );
       }
       // if this is a face
       else if( lines[ i ].startsWith( 'f ' ) ){
@@ -54,4 +52,25 @@ function Mesh( objectData ){
         }
       }
     }
+    // now use the vertex normal indices to generate a new 
+    // array of vertex normals that equals the length of the 
+    // face (element) array
+    var newVN = new Array();
+    for( var i=0; i<this.vertexNormalIndexArray.length; i++ ){
+      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 0 ] );
+      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 1 ] );
+      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 2 ] );
+    }
+    // set vertNormals to the newly created array
+    this.vertNormals = newVN;
+    console.log("Verts: " + this.vertexIndexArray);
+    console.log("Normals: " + this.vertNormals);
 }
+
+
+
+
+
+
+
+

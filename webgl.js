@@ -71,8 +71,8 @@
       shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
       gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
       
-      // shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-      // gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+      shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+      gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
       shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
       shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
@@ -160,8 +160,8 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexPositionBuffer);
       gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, modelVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
       
-      // gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexNormalBuffer);
-      // gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, modelVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexNormalBuffer);
+      gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, modelVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
       
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
       
@@ -174,7 +174,7 @@
       vec3.normalize(lightingDirection, adjustedLD);
       vec3.scale(adjustedLD, -1);
       
-      // gl.uniform3fv(shaderProgram.lightingDirectionUniform, adjustedLD);
+      gl.uniform3fv(shaderProgram.lightingDirectionUniform, adjustedLD);
       setMatrixUniforms();
       gl.drawElements(gl.TRIANGLES, modelVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
