@@ -7,6 +7,14 @@ Takes in obj file data and loads a mesh.
 
 `var mesh = new Mesh( OBJString );`
 
+To use the obj within a single file, do this:
+`<script id='mesh' type='text/plain'>...paste OBJ File Here Preserving \n's...</script>`
+
+And inside of your WebGL js file:
+`var mesh = new Mesh( document.getElementById( 'mesh' ).innerHTML );`
+
+
+
 #### The newly loaded object has four different attributes added to it:
 
 1. Mesh.verts: the array of vertices.
