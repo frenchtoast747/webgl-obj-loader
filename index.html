@@ -1,3 +1,4 @@
+
 <html>
 
 <head>
@@ -34,7 +35,7 @@
         
         vec3 transformedNormal = uNMatrix * aVertexNormal;
         float directionalLightWeighting = max(dot(transformedNormal, uLightingDirection), 0.0);
-        vLightWeighting = vec3(0.1,0.1,0.1) + vec3(1.0,1.0,1.0) * directionalLightWeighting;
+        vLightWeighting = vec3(0.1,0.1,0.1) + vec3(0.3,0.3,0.3) * directionalLightWeighting;
     }
 </script>
 
@@ -2019,7 +2020,6 @@ f 320//498 322//498 504//498
 f 320//498 504//498 390//498
 f 505//499 323//499 321//499
 f 505//499 321//499 391//499
-
 </script>
 <script type='text/javascript' src='webgl-obj-loader.js'></script>
 <script type='text/javascript' src='webgl.js'></script>

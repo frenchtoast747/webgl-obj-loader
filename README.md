@@ -21,3 +21,6 @@ Takes in obj file data and loads a mesh.
 
 ## Demo
 http://frenchtoast747.github.com/WebGL-Obj-Loader/
+
+## ChangeLog
+* Vertex Normals are now loaded.

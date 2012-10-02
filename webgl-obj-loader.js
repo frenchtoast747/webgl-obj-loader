@@ -8,23 +8,22 @@ if (typeof String.prototype.startsWith !== 'function') {
   };
 }
 
-// precompile the regexes
-// var floatsRegEx = /[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?/
-
 function Mesh( objectData ){
     /*
         With the given elementID or string of the OBJ, this parses the
         OBJ and creates the mesh.
     */
+
+    var verts = [];
+    var vertNormals = [];
     
-    // 'v'
-    this.verts = new Array();
-    // 'vn'
-    this.vertNormals = new Array();
-    // 'f vIA/tIA/vNIA'
-    this.vertexIndexArray = new Array();
-    this.textureIndexArray = new Array();
-    this.vertexNormalIndexArray = new Array();
+    // unpacking stuff
+    var packed = {};
+    packed.verts = [];
+    packed.norms = [];
+    packed.hashindices = {};
+    packed.indices = [];
+    packed.index = 0;
     
     // array of lines separated by the newline
     var lines = objectData.split( '\n' )
@@ -32,36 +31,42 @@ function Mesh( objectData ){
       // if this is a vertex
       if( lines[ i ].startsWith( 'v ' ) ){
         line = lines[ i ].slice( 2 ).split( " " )
-        this.verts.push( line[ 0 ] );
-        this.verts.push( line[ 1 ] );
-        this.verts.push( line[ 2 ] );
+        verts.push( line[ 0 ] );
+        verts.push( line[ 1 ] );
+        verts.push( line[ 2 ] );
       }
       // if this is a vertex normal
       else if( lines[ i ].startsWith( 'vn' ) ){
-        this.vertNormals.push( lines[ i ].slice( 3 ).split( " " ) );
+        line = lines[ i ].slice( 3 ).split( " " )
+        vertNormals.push( line[ 0 ] );
+        vertNormals.push( line[ 1 ] );
+        vertNormals.push( line[ 2 ] );
       }
       // if this is a face
       else if( lines[ i ].startsWith( 'f ' ) ){
         line = lines[ i ].slice( 2 ).split( " " );
         for(var j=0; j<line.length; j++){
-          face = line[ j ].split( '/' );
-          this.vertexIndexArray.push( face[ 0 ] - 1 );
-          this.textureIndexArray.push( face[ 1 ] - 1 );
-          this.vertexNormalIndexArray.push( face[ 2 ] - 1 );
+            if( line[ j ] in packed.hashindices ){
+                packed.indices.push( packed.hashindices[ line[ j ] ] );
+            }
+            else{
+                face = line[ j ].split( '/' );
+                packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 0 ] );
+                packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 1 ] );
+                packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 2 ] );
+                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 0  ] );
+                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 1 ] * 3 + 1 );
+                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 2 ] );
+                packed.hashindices[ line[ j ] ] = packed.index;
+                packed.indices.push( packed.index );
+                packed.index += 1;
+            }
         }
       }
     }
-    // now use the vertex normal indices to generate a new 
-    // array of vertex normals that equals the length of the 
-    // face (element) array
-    var newVN = new Array();
-    for( var i=0; i<this.vertexNormalIndexArray.length; i++ ){
-      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 0 ] );
-      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 1 ] );
-      newVN.push( this.vertNormals[ this.vertexNormalIndexArray[ i ] ][ 2 ] );
-    }
-    // set vertNormals to the newly created array
-    this.vertNormals = newVN;
+    this.vertices = packed.verts;
+    this.vertexNormals = packed.norms;
+    this.indices = packed.indices;
 }
 
 

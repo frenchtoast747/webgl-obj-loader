@@ -121,21 +121,21 @@
   function initBuffers() {
       modelVertexPositionBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexPositionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ball.verts), gl.STATIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ball.vertices), gl.STATIC_DRAW);
       modelVertexPositionBuffer.itemSize = 3;
-      modelVertexPositionBuffer.numItems = ball.verts.length / modelVertexPositionBuffer.itemSize;
+      modelVertexPositionBuffer.numItems = ball.vertices.length / modelVertexPositionBuffer.itemSize;
 
       modelVertexNormalBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, modelVertexNormalBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ball.vertNormals), gl.STATIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ball.vertexNormals), gl.STATIC_DRAW);
       modelVertexNormalBuffer.itemSize = 3;
-      modelVertexNormalBuffer.numItems = ball.vertNormals.length / modelVertexNormalBuffer.itemSize;
+      modelVertexNormalBuffer.numItems = ball.vertexNormals.length / modelVertexNormalBuffer.itemSize;
       
       modelVertexIndexBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, modelVertexIndexBuffer);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ball.vertexIndexArray), gl.STATIC_DRAW);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ball.indices), gl.STATIC_DRAW);
       modelVertexIndexBuffer.itemSize = 1;
-      modelVertexIndexBuffer.numItems = ball.vertexIndexArray.length;
+      modelVertexIndexBuffer.numItems = ball.indices.length;
   }
 
 
