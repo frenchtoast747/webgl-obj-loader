@@ -55,7 +55,7 @@ function Mesh( objectData ){
                 packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 1 ] );
                 packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 2 ] );
                 packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 0  ] );
-                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 1 ] * 3 + 1 );
+                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 1 ] );
                 packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 2 ] );
                 packed.hashindices[ line[ j ] ] = packed.index;
                 packed.indices.push( packed.index );
