@@ -16,11 +16,13 @@ function Mesh( objectData ){
 
     var verts = [];
     var vertNormals = [];
+    var textures = [];
     
     // unpacking stuff
     var packed = {};
     packed.verts = [];
     packed.norms = [];
+    packed.textures = [];
     packed.hashindices = {};
     packed.indices = [];
     packed.index = 0;
@@ -42,6 +44,12 @@ function Mesh( objectData ){
         vertNormals.push( line[ 1 ] );
         vertNormals.push( line[ 2 ] );
       }
+      // if this is a texture
+      else if( lines[ i ].startsWith( 'vt' ) ){
+        line = lines[ i ].slice( 3 ).split( " " )
+        textures.push( line[ 0 ] );
+        textures.push( line[ 1 ] );
+      }
       // if this is a face
       else if( lines[ i ].startsWith( 'f ' ) ){
         line = lines[ i ].slice( 2 ).split( " " );
@@ -51,14 +59,21 @@ function Mesh( objectData ){
             }
             else{
                 face = line[ j ].split( '/' );
+                // vertex position
                 packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 0 ] );
                 packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 1 ] );
                 packed.verts.push( verts[ (face[ 0 ] - 1) * 3 + 2 ] );
-                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 0  ] );
+                // vertex textures
+                packed.textures.push( textures[ (face[ 1 ] - 1) * 2 + 0 ] );
+                packed.textures.push( textures[ (face[ 1 ] - 1) * 2 + 1 ] );
+                // vertex normals
+                packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 0 ] );
                 packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 1 ] );
                 packed.norms.push( vertNormals[ (face[ 2 ] - 1) * 3 + 2 ] );
+                // add the newly created vertex to the list of indices
                 packed.hashindices[ line[ j ] ] = packed.index;
                 packed.indices.push( packed.index );
+                // increment the counter
                 packed.index += 1;
             }
         }
@@ -66,6 +81,7 @@ function Mesh( objectData ){
     }
     this.vertices = packed.verts;
     this.vertexNormals = packed.norms;
+    this.textures = packed.textures;
     this.indices = packed.indices;
 }
 
