@@ -203,9 +203,10 @@
       animate();
   }
 
-
+  
+  var meshes;
   function webGLStart() {
-      ball = new Mesh(document.getElementById("objectData").innerHTML);
+      ball = meshes['monkey'];
       var canvas = document.getElementById("mycanvas");
       initGL(canvas);
       initShaders()
@@ -216,3 +217,19 @@
 
       tick();
   }
+  
+  $(document).ready(function(){
+      downloadMeshes({
+          ball: 'http://theshaneallgeier.com/models/ball.obj',
+          blender_cube: 'http://theshaneallgeier.com/models/blender_cube.obj',
+          box: 'http://theshaneallgeier.com/models/box.obj',
+          frustum: 'http://theshaneallgeier.com/models/frustum.obj',
+          gem: 'http://theshaneallgeier.com/models/gem.obj',
+          plane: 'http://theshaneallgeier.com/models/plane.obj',
+          monkey: 'http://theshaneallgeier.com/models/suzanne.obj'
+      },
+      function(objs){
+          meshes = objs;
+          webGLStart();
+      });
+  });

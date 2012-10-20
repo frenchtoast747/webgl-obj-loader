@@ -86,9 +86,29 @@ function Mesh( objectData ){
 }
 
 
+/*
+  nameAndURLs should contain an object array with a unique object name as
+  the key and a URL as the value
+  
+  completionCallback should contain a function that will take one parameter:
+  an object array where the keys will be the unique object name and the value
+  will be a Mesh object
+*/
+function downloadMeshes( nameAndURLs, completionCallback ){
+    var ajaxes = new Array();
+    var meshes = new Object();
 
+    $.each( nameAndURLs, function( name, URL ){
+        ajaxes.push($.ajax({
+                url: URL,
+                success: function( data ){
+                    meshes[name] = new Mesh( data );
+                }
+            })
+        );
+    });
 
-
-
-
-
+    $.when.apply( $, ajaxes ).done(function(){
+        completionCallback( meshes );
+    });
+}
