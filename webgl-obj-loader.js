@@ -101,6 +101,7 @@ function downloadMeshes( nameAndURLs, completionCallback ){
     $.each( nameAndURLs, function( name, URL ){
         ajaxes.push($.ajax({
                 url: URL,
+                dataType: 'text',
                 success: function( data ){
                     meshes[name] = new Mesh( data );
                 }
