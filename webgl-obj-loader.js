@@ -53,7 +53,19 @@ function Mesh( objectData ){
       // if this is a face
       else if( lines[ i ].startsWith( 'f ' ) ){
         line = lines[ i ].slice( 2 ).split( " " );
+        var quad = false;
         for(var j=0; j<line.length; j++){
+            // Triangulating quads
+            // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
+            // corresponding triangles:
+            //      'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2'
+            //      'f v2/t2/vn2 v3/t3/vn3 v0/t0/vn0'
+            if(j == 3 && !quad) {
+                // add v2/t2/vn2 in again before continuing to 3
+                j = 2;
+                quad = true;
+            }
+
             if( line[ j ] in packed.hashindices ){
                 packed.indices.push( packed.hashindices[ line[ j ] ] );
             }
@@ -75,6 +87,11 @@ function Mesh( objectData ){
                 packed.indices.push( packed.index );
                 // increment the counter
                 packed.index += 1;
+            }
+
+            if(j == 3 && quad) {
+                // add v0/t0/vn0 onto the second triangle
+                packed.indices.push( packed.hashindices[ line[ 0 ] ] );
             }
         }
       }
