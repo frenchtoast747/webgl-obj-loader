@@ -6,7 +6,7 @@ Takes in obj file data and loads a mesh.
 #### Requirements:
 * jQuery (for the use of the util function downloadMeshes)
 
-## To create a new Mesh:
+#### To create a new Mesh:
 
 `var mesh = new obj_loader.Mesh( OBJString );`
 
@@ -20,15 +20,14 @@ And inside of your WebGL js file:
 
 #### The newly loaded object has four different attributes added to it:
 
-1. Mesh.verts: the array of vertices.
-2. Mesh.vertNormals: the array of vertex normals.
-3. Mesh.vertexIndexArray: the array of vertex indices to be used with an Element Array.
-4. Mesh.textureIndexArray: the array of texture indices.
-5. Mesh.vertexNormalIndexArray: the array of vertex normal indices.
+1. Mesh.vertices: the array of vertices.
+2. Mesh.vertexNormals: the array of vertex normals.
+3. Mesh.indices: the array of vertex indices to be used with an Element Array.
+4. Mesh.textures: the array of texture indices.
 
 #### Downloading Meshes
 
-If you are able to host your OBJs on a server, then the OBJ Loader provides a function (obj_loader.downloadMeshes) to download all of the models, create the meshes with the provided loader, and then run a callback function passing the newly created meshes to that callback function. obj_loader.downloadMeshes takes in a JavaScript Object comprised of `<mesh_name> : <url>`, as well as the function literal or function name for the callback.
+If you are able to host your OBJs on a server, then the OBJ Loader provides a function `obj_loader.downloadMeshes` to download all of the obj models, create the meshes with the provided loader, and then run a callback function passing the newly created meshes to that callback function. `obj_loader.downloadMeshes` takes in a JavaScript Object comprised of `<mesh_name> : <url>`, as well as the function literal or function name for the callback.
 
 For example:
 ```javascript
@@ -57,7 +56,7 @@ function initBuffers(){
 }
 ```
 
-*Note* the downloadMeshes function requires jQuery at this time.
+***Note:** the downloadMeshes function requires jQuery at this time.*
 
 ## Demo
 http://frenchtoast747.github.com/WebGL-Obj-Loader/
