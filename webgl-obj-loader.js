@@ -7,8 +7,9 @@ if (typeof String.prototype.startsWith !== 'function') {
     return this.slice(0, str.length) === str;
   };
 }
+var obj_loader = {};
 
-function Mesh( objectData ){
+obj_loader.Mesh = function( objectData ){
     /*
         With the given elementID or string of the OBJ, this parses the
         OBJ and creates the mesh.
@@ -111,7 +112,7 @@ function Mesh( objectData ){
   an object array where the keys will be the unique object name and the value
   will be a Mesh object
 */
-function downloadMeshes( nameAndURLs, completionCallback ){
+obj_loader.downloadMeshes = function( nameAndURLs, completionCallback ){
     var ajaxes = new Array();
     var meshes = new Object();
 
