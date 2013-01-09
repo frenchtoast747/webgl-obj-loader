@@ -56,7 +56,7 @@ function initBuffers(){
 }
 ```
 
-***Note:** the downloadMeshes function requires jQuery at this time.*
+* **Note:** the downloadMeshes function requires jQuery at this time.*
 
 ## Demo
 http://frenchtoast747.github.com/WebGL-Obj-Loader/
