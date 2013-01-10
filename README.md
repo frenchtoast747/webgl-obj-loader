@@ -27,14 +27,14 @@ And inside of your WebGL js file:
 
 #### Downloading Meshes
 
-If you are able to host your OBJs on a server, then the OBJ Loader provides a function `obj_loader.downloadMeshes` to download all of the obj models, create the meshes with the provided loader, and then run a callback function passing the newly created meshes to that callback function. `obj_loader.downloadMeshes` takes in a JavaScript Object comprised of `<mesh_name> : <url>`, as well as the function literal or function name for the callback.
+If you are able to host your OBJs on a server, then the OBJ Loader provides a function `obj_utils.downloadMeshes` to download all of the obj models, create the meshes with the provided loader, and then run a callback function passing the newly created meshes to that callback function. `obj_utils.downloadMeshes` takes in a JavaScript Object comprised of `<mesh_name> : <url>`, as well as the function literal or function name for the callback.
 
 For example:
 ```javascript
 app = {};
 app.meshes = {};
 $(document).ready(function(){
-    obj_loader.downloadMeshes(
+    obj_utils.downloadMeshes(
         {
             'suzanne': 'http://mydomain.com/objs/suzanne.obj',
             'another_mesh': 'http://mydomain.com/objs/some_other_model.objs'
@@ -50,8 +50,8 @@ function webGLStart( meshes ){
 }
 
 function initBuffers(){
-     initMeshBuffers( app.meshes.suzanne );
-     initMeshBuffers( app.meshes.another_mesh );
+     obj_utils.initMeshBuffers( app.meshes.suzanne );
+     obj_utils.initMeshBuffers( app.meshes.another_mesh );
      ...
 }
 ```

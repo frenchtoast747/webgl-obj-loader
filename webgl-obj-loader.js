@@ -104,6 +104,9 @@ obj_loader.Mesh = function( objectData ){
 }
 
 
+/* UTIL FUNCTIONS */
+obj_utils = {};
+
 /*
   nameAndURLs should contain an object array with a unique object name as
   the key and a URL as the value
@@ -112,7 +115,7 @@ obj_loader.Mesh = function( objectData ){
   an object array where the keys will be the unique object name and the value
   will be a Mesh object
 */
-obj_loader.downloadMeshes = function( nameAndURLs, completionCallback ){
+obj_utils.downloadMeshes = function( nameAndURLs, completionCallback ){
     var ajaxes = new Array();
     var meshes = new Object();
 
@@ -130,4 +133,53 @@ obj_loader.downloadMeshes = function( nameAndURLs, completionCallback ){
     $.when.apply( $, ajaxes ).done(function(){
         completionCallback( meshes );
     });
+}
+
+obj_utils.initMeshBuffers = function( gl, mesh ){
+  /*
+    Takes in the WebGL context and a Mesh, then creates and appends the buffers
+    to the mesh object.
+
+    The new mesh attributes are:
+      mesh.normalBuffer   contains the model's Vertex Normals
+        mesh.normalBuffer.itemSize  set to 3 items
+        mesh.normalBuffer.numItems  the total number of vertex normals
+
+      mesh.textureBuffer  contains the model's Texture Coordinates
+        mesh.textureBuffer.itemSize set to 2 items
+        mesh.textureBuffer.numItems the number of texture coordinates
+
+      mesh.vertexBuffer   contains the model's Vertex Position Coordinates (does not include w)
+        mesh.vertexBuffer.itemSize  set to 3 items
+        mesh.vertexBuffer.numItems  the total number of vertices
+
+      mesh.indexBuffer    contains the indices of the for the faces
+                          These are to be used with gl.drawElements()
+                          and gl.TRIANGLES
+        mesh.indexBuffer.itemSize   is set to 1
+        mesh.indexBuffer.numItems   the total number of indices
+  */
+  mesh.normalBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertexNormals), gl.STATIC_DRAW);
+  mesh.normalBuffer.itemSize = 3;
+  mesh.normalBuffer.numItems = mesh.vertexNormals.length / 3;
+
+  mesh.textureBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
+  mesh.textureBuffer.itemSize = 2;
+  mesh.textureBuffer.numItems = mesh.textures.length / 2;
+
+  mesh.vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertices), gl.STATIC_DRAW);
+  mesh.vertexBuffer.itemSize = 3;
+  mesh.vertexBuffer.numItems = mesh.vertices.length / 3;
+
+  mesh.indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_DRAW);
+  mesh.indexBuffer.itemSize = 1;
+  mesh.indexBuffer.numItems = mesh.indices.length;
 }
