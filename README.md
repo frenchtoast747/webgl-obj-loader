@@ -77,6 +77,8 @@ function initBuffers(){
 
 ## Demo
 http://frenchtoast747.github.com/WebGL-Obj-Loader/
+This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory
+to see how the OBJ loader is used in a project.
 
 ## ChangeLog
 * Vertex Normals are now loaded into mesh.vertexNormals
