@@ -1,0 +1,88 @@
+newmtl Bolt2_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Bolt1_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Wall_base_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl default
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Arm_lower_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Arm_upper_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Holder2_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+
+newmtl Holder1_auv
+d 1
+Ns 1
+Ni 0
+Ka 0.223529 0.223529 0.223529
+Kd 1 1 1
+Ks 0 0 0
+Km 0.6
+map_Kd /Maps/rust.jpg
+map_Bump /Maps/rust.jpg
+

@@ -1,0 +1,50 @@
+newmtl Default
+Ka 0 0 0
+Kd 0.784314 0.784314 0.784314
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd stony_ground.jpg
+
+newmtl Default
+Ka 0 0 0
+Kd 0.784314 0.784314 0.784314
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd room_floor.jpg
+
+newmtl Default
+Ka 0 0 0
+Kd 0.784314 0.784314 0.784314
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd stone_wall_seamless.png
+
+newmtl Default
+Ka 0 0 0
+Kd 0.784314 0.784314 0.784314
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd stone_wall_seamless.png
+
+newmtl Default
+Ka 0 0 0
+Kd 0.784314 0.784314 0.784314
+Ks 0 0 0
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd stony_ground.jpg
+

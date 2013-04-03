@@ -1,0 +1,10 @@
+newmtl Default
+Ka 0.2 0.2 0.2
+Kd 0.784314 0.784314 0.784314
+Ks 1 1 1
+Ni 1
+Ns 400
+Tf 1 1 1
+d 1
+map_Kd stone_wall.png
+
