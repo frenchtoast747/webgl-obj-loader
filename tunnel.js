@@ -5,11 +5,11 @@ app.tunneldata.angleMin = -app.tunneldata.angleRange/2;
 app.tunneldata.angle = {};
 app.tunneldata.ground = {};
 app.tunneldata.groundSpace = {};
-app.tunneldata.groundTexture = "http://webspace.no-ip.org/file-storage/1/stony_ground.jpg";
+app.tunneldata.groundTexture = "textures/stony_ground.jpg";
 app.tunneldata.wall = {};
 app.tunneldata.celling = {};
 app.tunneldata.cellingSpace = {};
-app.tunneldata.cellingTexture = "http://webspace.no-ip.org/file-storage/1/stony_ground.jpg"
+app.tunneldata.cellingTexture = "textures/stony_ground.jpg"
 app.tunneldata.space = {};
 
 function drawTunnelScene() {
@@ -59,7 +59,7 @@ function initTunnel() {
   }
 
   app.tunneldata.ground = initModel(app.tunneldata.square, app.tunneldata.groundTexture);
-  app.tunneldata.wall = initModel(app.tunneldata.square, "http://webspace.no-ip.org/file-storage/1/stone_wall.png");
+  app.tunneldata.wall = initModel(app.tunneldata.square, "textures/stone_wall.png");
   app.tunneldata.celling = initModel(app.tunneldata.square, app.tunneldata.cellingTexture);
 }
 
