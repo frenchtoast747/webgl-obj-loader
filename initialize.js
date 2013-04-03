@@ -139,70 +139,21 @@ function initTexture( object, url) {
 }
 
 function initTextures(){
-  initTexture( app.models.room_ceiling, "/textures/stony_ground.jpg" );
-  initTexture( app.models.room_walls, "/textures/stone_wall.png" );
-  initTexture( app.models.room_floor, "/textures/room_floor.jpg" );
+  initTexture( app.models.room_ceiling, "textures/stony_ground.jpg" );
+  initTexture( app.models.room_walls, "textures/stone_wall.png" );
+  initTexture( app.models.room_floor, "textures/room_floor.jpg" );
   app.models.room_tunnel_walls.texture = app.models.room_walls.texture;
   app.models.room_wall_broken.texture = app.models.room_walls.texture;
   app.models.room_wall_unbroken.texture = app.models.room_walls.texture;
   app.models.room_tunnel_ceiling.texture = app.models.room_ceiling.texture;
   app.models.boulder.texture = app.models.room_ceiling.texture;
-  initTexture( app.particles, "/textures/smoke.png" );
-}
-
-function initMeshBuffers( mesh ) {
-  /*
-    Takes in a Mesh then creates and appends the buffers
-    to the mesh object.
-
-    The new mesh attributes are:
-      mesh.normalBuffer   contains the model's Vertex Normals
-        mesh.normalBuffer.itemSize  set to 3 items
-        mesh.normalBuffer.numItems  the total number of vertex normals
-
-      mesh.textureBuffer  contains the model's Texture Coordinates
-        mesh.textureBuffer.itemSize set to 2 items
-        mesh.textureBuffer.numItems the number of texture coordinates
-
-      mesh.vertexBuffer   contains the model's Vertex Position Coordinates (does not include w)
-        mesh.vertexBuffer.itemSize  set to 3 items
-        mesh.vertexBuffer.numItems  the total number of vertices
-
-      mesh.indexBuffer    contains the indices of the for the faces
-                          These are to be used with gl.drawElements()
-                          and gl.TRIANGLES
-        mesh.indexBuffer.itemSize   is set to 1
-        mesh.indexBuffer.numItems   the total number of indices
-  */
-  mesh.normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertexNormals), gl.STATIC_DRAW);
-  mesh.normalBuffer.itemSize = 3;
-  mesh.normalBuffer.numItems = mesh.vertexNormals.length / 3;
-
-  mesh.textureBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
-  mesh.textureBuffer.itemSize = 2;
-  mesh.textureBuffer.numItems = mesh.textures.length / 2;
-
-  mesh.vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertices), gl.STATIC_DRAW);
-  mesh.vertexBuffer.itemSize = 3;
-  mesh.vertexBuffer.numItems = mesh.vertices.length / 3;
-
-  mesh.indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_DRAW);
-  mesh.indexBuffer.itemSize = 1;
-  mesh.indexBuffer.numItems = mesh.indices.length;
+  initTexture( app.particles, "textures/smoke.png" );
 }
 
 function initBuffers() {
   // initialize the mesh's buffers
   for( mesh in app.meshes ){
-    initMeshBuffers( app.meshes[ mesh ] );
+    obj_utils.initMeshBuffers( gl, app.meshes[ mesh ] );
     // this loops through the mesh names and creates new
     // model objects and setting their mesh to the current mesh
     app.models[ mesh ] = {};
