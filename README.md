@@ -31,7 +31,24 @@ If you are able to host your OBJs on a server, then the OBJ Loader provides a fu
 
 For example:
 ```javascript
-app = {};
+function initGL(canvas) {
+    try {
+        gl = canvas.getContext("experimental-webgl");
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
+    } catch (e) {
+    }
+    if (!gl) {
+        alert("Could not initialise WebGL, sorry :-(");
+    }
+}
+
+// the webgl context
+var gl;
+// init the context
+initGL(canvas);
+// a container variable (like a namespace protector)
+var app = {};
 app.meshes = {};
 $(document).ready(function(){
     obj_utils.downloadMeshes(
@@ -50,8 +67,8 @@ function webGLStart( meshes ){
 }
 
 function initBuffers(){
-     obj_utils.initMeshBuffers( app.meshes.suzanne );
-     obj_utils.initMeshBuffers( app.meshes.another_mesh );
+     obj_utils.initMeshBuffers( gl, app.meshes.suzanne );
+     obj_utils.initMeshBuffers( gl, app.meshes.another_mesh );
      ...
 }
 ```
