@@ -124,7 +124,7 @@ obj_utils.downloadMeshes = function( nameAndURLs, completionCallback ){
                 url: URL,
                 dataType: 'text',
                 success: function( data ){
-                    meshes[name] = new Mesh( data );
+                    meshes[name] = new obj_loader.Mesh( data );
                 }
             })
         );
