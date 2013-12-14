@@ -84,3 +84,6 @@ to see how the OBJ loader is used in a project.
 * Vertex Normals are now loaded into mesh.vertexNormals
 * Texture Coordinates are now loaded into mesh.textures
 * Initial support for Quad models
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/frenchtoast747/webgl-obj-loader/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
