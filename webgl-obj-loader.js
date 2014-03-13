@@ -247,7 +247,6 @@
     var semaphore = Object.keys(nameAndURLs).length;
     // if error is true, an alert will given
     var error = false;
-    var errors = {};
     // this is used to check if all meshes have been downloaded
     // if meshes is supplied, then it will be populated, otherwise
     // a new object is created. this will be passed into the completionCallback
@@ -261,9 +260,9 @@
               meshes[name] = new OBJ.Mesh(data);
             }
             else {
+              error = true;
               console.error('An error has occurred and the mesh "' +
                 name + '" could not be downloaded.');
-              errors[name] = status;
             }
             // the request has finished, decrement the counter
             semaphore--;
@@ -271,9 +270,9 @@
               if (error) {
                 // if an error has occurred, the user is notified here and the
                 // callback is not called
-                alert('An error has occurred and one or meshes has not been ' +
-                  'downloaded. Check the console for more information.');
-                throw errors;
+                console.error('An error has occurred and one or meshes has not been ' +
+                  'downloaded. The execution of the script has terminated.');
+                throw '';
               }
               // there haven't been any errors in retrieving the meshes
               // call the callback
@@ -292,7 +291,7 @@
    * @param {WebGLRenderingContext} gl the `canvas.getContext('webgl')` context instance
    * @param {Mesh} mesh a single `OBJ.Mesh` instance
    *
-   * The newly mesh attributes are:
+   * The newly created mesh attributes are:
    *
    * Attrbute | Description
    * :--- | ---

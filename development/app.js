@@ -20,7 +20,7 @@ function webGLStart(meshes){
 
 window.onload = function(){
   OBJ.downloadMeshes({
-    'suzanne': 'models/suzanne.obj',
-    'sphere': 'models/sphere.obj'
+    'suzanne': '/development/models/suzanne.obj',
+    'sphere': '/development/models/sphere.obj'
   }, webGLStart);
 }
