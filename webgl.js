@@ -11,7 +11,7 @@ function animate() {
     }
   }
   app.lastTime = app.timeNow;
-} 
+}
 
 function tick() {
   requestAnimFrame(tick);
@@ -28,7 +28,7 @@ function webGLStart( meshes ) {
   initTunnel();
   initPointerLock();
   initTextures();
-  
+
   document.onkeydown = cameraKeyDownHandler;
   document.onkeyup = cameraKeyUpHandler;
 
@@ -38,8 +38,8 @@ function webGLStart( meshes ) {
   tick();
 }
 
-$(document).ready(function(){
-  obj_utils.downloadMeshes({
+window.onload = function(){
+  OBJ.downloadMeshes({
       'tunnel_ceiling':'models/tunnel_ceiling.obj',
       'tunnel_walls':'models/tunnel_walls.obj',
       'room_walls': 'models/room_walls.obj',
@@ -55,4 +55,4 @@ $(document).ready(function(){
     },
     webGLStart
   );
-});
+};

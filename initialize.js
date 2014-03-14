@@ -47,7 +47,7 @@ function getShader(gl, id) {
 
 function initShaders() {
   initParticleShaders();
-  
+
   var fragmentShader = getShader(gl, "shader-fs");
   var vertexShader = getShader(gl, "shader-vs");
 
@@ -99,16 +99,16 @@ function initParticleShaders() {
   if (!gl.getProgramParameter(particleShaderProgram, gl.LINK_STATUS)) {
     alert("Could not initialise shaders");
   }
-  
+
   particleShaderProgram.particlePosition = gl.getAttribLocation(particleShaderProgram, "aParticlePosition");
   gl.enableVertexAttribArray(particleShaderProgram.particlePosition);
-  
+
   particleShaderProgram.particleVector = gl.getAttribLocation(particleShaderProgram, "aParticleVector");
   gl.enableVertexAttribArray(particleShaderProgram.particleVector);
-  
+
   particleShaderProgram.particleTTL = gl.getAttribLocation(particleShaderProgram, "aParticleTTL");
   gl.enableVertexAttribArray(particleShaderProgram.particleTTL);
-  
+
   particleShaderProgram.time = gl.getUniformLocation(particleShaderProgram, "time");
   particleShaderProgram.samplerUniform = gl.getUniformLocation(particleShaderProgram, "uSampler");
   particleShaderProgram.pMatrixUniform = gl.getUniformLocation(particleShaderProgram, "uPMatrix");
@@ -153,7 +153,7 @@ function initTextures(){
 function initBuffers() {
   // initialize the mesh's buffers
   for( mesh in app.meshes ){
-    obj_utils.initMeshBuffers( gl, app.meshes[ mesh ] );
+    OBJ.initMeshBuffers( gl, app.meshes[ mesh ] );
     // this loops through the mesh names and creates new
     // model objects and setting their mesh to the current mesh
     app.models[ mesh ] = {};

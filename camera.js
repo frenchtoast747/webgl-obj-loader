@@ -6,12 +6,12 @@ function initPointerLock() {
                              canvas.mozRequestFullscreen ||
                              canvas.mozRequestFullScreen || // Older API upper case 'S'.
                              canvas.webkitRequestFullscreen;
-  $(canvas).click( canvas.requestFullscreen );
-  
+  canvas.addEventListener('click', canvas.requestFullscreen, false);
+
   document.addEventListener('fullscreenchange', fullscreenChange, false);
   document.addEventListener('mozfullscreenchange', fullscreenChange, false);
   document.addEventListener('webkitfullscreenchange', fullscreenChange, false);
-  
+
   document.addEventListener('pointerlockchange', pointerLockChange, false);
   document.addEventListener('mozpointerlockchange', pointerLockChange, false);
   document.addEventListener('webkitpointerlockchange', pointerLockChange, false);
@@ -57,7 +57,7 @@ function moveCallback( e ){
                     e.mozMovementY    ||
                     e.webkitMovementY ||
                     0;
-                    
+
   app.camera.heading += movementX / app.camera.sensitivity;
   app.camera.pitch += movementY / app.camera.sensitivity;
 
