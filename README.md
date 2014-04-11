@@ -192,7 +192,7 @@ gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT
 ```
 
 ## Demo
-http://frenchtoast747.github.com/WebGL-Obj-Loader/
+http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
