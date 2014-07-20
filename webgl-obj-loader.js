@@ -103,23 +103,26 @@
     for (i = 0; i < lines.length; i++) {
       // if this is a vertex
       var line;
-      if (lines[i].startsWith('v ')) {
-        line = lines[i].slice(2).split(" ");
+      if (lines[i].trim().startsWith('v ')) {
+        line = lines[i].trim().split(/\s+/);
+        line.shift();
         verts.push(line[0]);
         verts.push(line[1]);
         verts.push(line[2]);
-      } else if (lines[i].startsWith('vn')) {
+      } else if (lines[i].trim().startsWith('vn')) {
         // if this is a vertex normal
-        line = lines[i].slice(3).split(" ");
+        line = lines[i].trim().split(/\s+/);
+        line.shift();
         vertNormals.push(line[0]);
         vertNormals.push(line[1]);
         vertNormals.push(line[2]);
-      } else if (lines[i].startsWith('vt')) {
+      } else if (lines[i].trim().startsWith('vt')) {
         // if this is a texture
-        line = lines[i].slice(3).split(" ");
+        line = lines[i].trim().split(/\s+/);
+        line.shift();
         textures.push(line[0]);
         textures.push(line[1]);
-      } else if (lines[i].startsWith('f ')) {
+      } else if (lines[i].trim().startsWith('f ')) {
         // if this is a face
         /*
         split this face into an array of Vertex groups
@@ -128,7 +131,8 @@
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = lines[i].slice(2).split(" ");
+        line = lines[i].trim().split(/\s+/);
+        line.shift();
         var quad = false;
         for (var j=0; j<line.length; j++){
             // Triangulating quads
