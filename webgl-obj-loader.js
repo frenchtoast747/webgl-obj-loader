@@ -1,12 +1,6 @@
 (function (window, document, undefined) {
   'use strict';
-  // Thanks to CMS for the startsWith function
-  // http://stackoverflow.com/questions/646628/javascript-startswith/646643#646643
-  if (typeof String.prototype.startsWith !== 'function') {
-    String.prototype.startsWith = function (str) {
-      return this.slice(0, str.length) === str;
-    };
-  }
+
   var OBJ = {};
   window.OBJ = OBJ;
 
@@ -100,29 +94,35 @@
     unpacked.index = 0;
     // array of lines separated by the newline
     var lines = objectData.split('\n'), i;
+
+    const VERTEX_RE = /^v\s/;
+    const NORMAL_RE = /^vn\s/;
+    const TEXTURE_RE = /^vt\s/;
+    const FACE_RE = /^f\s/;
+
     for (i = 0; i < lines.length; i++) {
       // if this is a vertex
-      var line;
-      if (lines[i].trim().startsWith('v ')) {
-        line = lines[i].trim().split(/\s+/);
+      var line = lines[i].trim();
+      if (VERTEX_RE.test(line)) {
+        line = line.split(/\s+/);
         line.shift();
         verts.push(line[0]);
         verts.push(line[1]);
         verts.push(line[2]);
-      } else if (lines[i].trim().startsWith('vn')) {
+      } else if (NORMAL_RE.test(line)) {
         // if this is a vertex normal
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         vertNormals.push(line[0]);
         vertNormals.push(line[1]);
         vertNormals.push(line[2]);
-      } else if (lines[i].trim().startsWith('vt')) {
+      } else if (TEXTURE_RE.test(line)) {
         // if this is a texture
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         textures.push(line[0]);
         textures.push(line[1]);
-      } else if (lines[i].trim().startsWith('f ')) {
+      } else if (FACE_RE.test(line)) {
         // if this is a face
         /*
         split this face into an array of Vertex groups
@@ -131,7 +131,7 @@
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         var quad = false;
         for (var j=0; j<line.length; j++){
