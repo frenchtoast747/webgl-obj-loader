@@ -93,35 +93,27 @@
     unpacked.indices = [];
     unpacked.index = 0;
     // array of lines separated by the newline
-    var lines = objectData.split('\n'), i;
+    var lines = objectData.split('\n');
 
     const VERTEX_RE = /^v\s/;
     const NORMAL_RE = /^vn\s/;
     const TEXTURE_RE = /^vt\s/;
     const FACE_RE = /^f\s/;
+    const WHITESPACE_RE = /\s+/;
 
-    for (i = 0; i < lines.length; i++) {
-      // if this is a vertex
+    for (var i = 0, lineLen = lines.length; i < lineLen; ++i) {
       var line = lines[i].trim();
+      var elements = line.split(WHITESPACE_RE);
+      elements.shift();
       if (VERTEX_RE.test(line)) {
-        line = line.split(/\s+/);
-        line.shift();
-        verts.push(line[0]);
-        verts.push(line[1]);
-        verts.push(line[2]);
+        // if this is a vertex
+        verts.push.apply(verts, elements);
       } else if (NORMAL_RE.test(line)) {
         // if this is a vertex normal
-        line = line.split(/\s+/);
-        line.shift();
-        vertNormals.push(line[0]);
-        vertNormals.push(line[1]);
-        vertNormals.push(line[2]);
+        vertNormals.push.apply(vertNormals, elements);
       } else if (TEXTURE_RE.test(line)) {
         // if this is a texture
-        line = line.split(/\s+/);
-        line.shift();
-        textures.push(line[0]);
-        textures.push(line[1]);
+        textures.push.apply(textures, elements);
       } else if (FACE_RE.test(line)) {
         // if this is a face
         /*
@@ -131,10 +123,8 @@
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = line.split(/\s+/);
-        line.shift();
         var quad = false;
-        for (var j=0; j<line.length; j++){
+        for (var j = 0, eleLen = elements.length; j < eleLen; ++j){
             // Triangulating quads
             // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
             // corresponding triangles:
@@ -145,25 +135,25 @@
                 j = 2;
                 quad = true;
             }
-            if(line[j] in unpacked.hashindices){
-                unpacked.indices.push(unpacked.hashindices[line[j]]);
+            if(elements[j] in unpacked.hashindices){
+                unpacked.indices.push(unpacked.hashindices[elements[j]]);
             }
             else{
                 /*
-                Each element of the face line array is a Vertex which has its
+                Each element of the face line array is a vertex which has its
                 attributes delimited by a forward slash. This will separate
                 each attribute into another array:
                     '19/92/11'
                 becomes:
-                    Vertex = ['19', '92', '11'];
+                    vertex = ['19', '92', '11'];
                 where
-                    Vertex[0] is the vertex index
-                    Vertex[1] is the texture index
-                    Vertex[2] is the normal index
+                    vertex[0] is the vertex index
+                    vertex[1] is the texture index
+                    vertex[2] is the normal index
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
-                var Vertex = line[ j ].split( '/' );
+                var vertex = elements[ j ].split( '/' );
                 /*
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
@@ -172,7 +162,7 @@
                  vertex (both are different in my descriptions) I will explain
                  what's going on using the vertexNormals array:
 
-                 Vertex[2] will contain the one-based index of the vertexNormals
+                 vertex[2] will contain the one-based index of the vertexNormals
                  section (vn). One is subtracted from this index number to play
                  nice with javascript's zero-based array indexing.
 
@@ -184,25 +174,28 @@
                  This same process is repeated for verts and textures.
                  */
                 // vertex position
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 0]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 1]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 2]);
+                var vertIndex = (vertex[0] - 1) * 3;
+                unpacked.verts.push(verts[vertIndex    ],
+                                    verts[vertIndex + 1],
+                                    verts[vertIndex + 2]);
                 // vertex textures
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 0]);
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 1]);
+                var texIndex = (vertex[1] - 1) * 2;
+                unpacked.textures.push(textures[texIndex    ],
+                                       textures[texIndex + 1]);
                 // vertex normals
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 0]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 1]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 2]);
+                var normIndex = (vertex[2] - 1) * 3;
+                unpacked.norms.push(vertNormals[normIndex    ],
+                                    vertNormals[normIndex + 1],
+                                    vertNormals[normIndex + 2]);
                 // add the newly created vertex to the list of indices
-                unpacked.hashindices[line[j]] = unpacked.index;
+                unpacked.hashindices[vertex[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
                 // increment the counter
-                unpacked.index += 1;
+                ++unpacked.index;
             }
             if(j === 3 && quad) {
                 // add v0/t0/vn0 onto the second triangle
-                unpacked.indices.push( unpacked.hashindices[line[0]]);
+                unpacked.indices.push(unpacked.hashindices[elements[0]]);
             }
         }
       }
