@@ -1,4 +1,4 @@
-(function (window, document, undefined) {
+(function (window, undefined) {
   'use strict';
   // Thanks to CMS for the startsWith function
   // http://stackoverflow.com/questions/646628/javascript-startswith/646643#646643
@@ -375,4 +375,4 @@
     gl.deleteBuffer(mesh.indexBuffer);
   }
 
-})(this, document);
+})(this);
