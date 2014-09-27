@@ -288,6 +288,16 @@
     }
   };
 
+  var _buildBuffer = function( gl, type, data, itemSize ){
+    var buffer = gl.createBuffer();
+    var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
+    gl.bindBuffer(type, buffer);
+    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
+    buffer.itemSize = itemSize;
+    buffer.numItems = data.length / itemSize;
+    return buffer;
+  }
+
   /**
    * Takes in the WebGL context and a Mesh, then creates and appends the buffers
    * to the mesh object as attributes.
@@ -352,29 +362,10 @@
    *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
    */
   OBJ.initMeshBuffers = function( gl, mesh ){
-    mesh.normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertexNormals), gl.STATIC_DRAW);
-    mesh.normalBuffer.itemSize = 3;
-    mesh.normalBuffer.numItems = mesh.vertexNormals.length / 3;
-
-    mesh.textureBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
-    mesh.textureBuffer.itemSize = 2;
-    mesh.textureBuffer.numItems = mesh.textures.length / 2;
-
-    mesh.vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertices), gl.STATIC_DRAW);
-    mesh.vertexBuffer.itemSize = 3;
-    mesh.vertexBuffer.numItems = mesh.vertices.length / 3;
-
-    mesh.indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_DRAW);
-    mesh.indexBuffer.itemSize = 1;
-    mesh.indexBuffer.numItems = mesh.indices.length;
+    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
+    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, 2);
+    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
+    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
   }
 
   OBJ.deleteMeshBuffers = function( gl, mesh ){
@@ -383,4 +374,5 @@
     gl.deleteBuffer(mesh.vertexBuffer);
     gl.deleteBuffer(mesh.indexBuffer);
   }
+
 })(this, document);
