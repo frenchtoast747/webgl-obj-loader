@@ -99,30 +99,29 @@
     unpacked.indices = [];
     unpacked.index = 0;
     // array of lines separated by the newline
-    var lines = objectData.split('\n'), i;
-    for (i = 0; i < lines.length; i++) {
-      // if this is a vertex
+    var lines = objectData.split('\n');
+    
+    var VERTEX_RE = /^v\s/;
+    var NORMAL_RE = /^vn\s/;
+    var TEXTURE_RE = /^vt\s/;
+    var FACE_RE = /^f\s/;
+    var WHITESPACE_RE = /\s+/;
+    
+    for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
-      if (line.startsWith('v ')) {
-        line = line.split(/\s+/);
-        line.shift();
-        verts.push(line[0]);
-        verts.push(line[1]);
-        verts.push(line[2]);
-      } else if (line.startsWith('vn')) {
+      var elements = line.split(WHITESPACE_RE);
+      elements.shift();
+      
+      if (VERTEX_RE.test(line)) {
+        // if this is a vertex
+        verts.push.apply(verts, elements);
+      } else if (NORMAL_RE.test(line)) {
         // if this is a vertex normal
-        line = line.split(/\s+/);
-        line.shift();
-        vertNormals.push(line[0]);
-        vertNormals.push(line[1]);
-        vertNormals.push(line[2]);
-      } else if (line.startsWith('vt')) {
+        vertNormals.push.apply(vertNormals, elements);
+      } else if (TEXTURE_RE.test(line)) {
         // if this is a texture
-        line = line.split(/\s+/);
-        line.shift();
-        textures.push(line[0]);
-        textures.push(line[1]);
-      } else if (line.startsWith('f ')) {
+        textures.push.apply(textures, elements);
+      } else if (FACE_RE.test(line)) {
         // if this is a face
         /*
         split this face into an array of vertex groups
@@ -131,10 +130,8 @@
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = line.split(/\s+/);
-        line.shift();
         var quad = false;
-        for (var j=0; j<line.length; j++){
+        for (var j = 0, eleLen = elements.length; j < eleLen; j++){
             // Triangulating quads
             // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
             // corresponding triangles:
@@ -145,8 +142,8 @@
                 j = 2;
                 quad = true;
             }
-            if(line[j] in unpacked.hashindices){
-                unpacked.indices.push(unpacked.hashindices[line[j]]);
+            if(elements[j] in unpacked.hashindices){
+                unpacked.indices.push(unpacked.hashindices[elements[j]]);
             }
             else{
                 /*
@@ -163,7 +160,7 @@
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
-                var vertex = line[ j ].split( '/' );
+                var vertex = elements[ j ].split( '/' );
                 /*
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
@@ -195,14 +192,14 @@
                 unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 1]);
                 unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 2]);
                 // add the newly created vertex to the list of indices
-                unpacked.hashindices[line[j]] = unpacked.index;
+                unpacked.hashindices[elements[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
                 // increment the counter
                 unpacked.index += 1;
             }
             if(j === 3 && quad) {
                 // add v0/t0/vn0 onto the second triangle
-                unpacked.indices.push( unpacked.hashindices[line[0]]);
+                unpacked.indices.push( unpacked.hashindices[elements[0]]);
             }
         }
       }
@@ -261,7 +258,10 @@
         new Ajax().get(nameAndURLs[mesh_name], (function(name) {
           return function (data, status) {
             if (status === 200) {
+              var start = new Date();
+              console.log('starting');
               meshes[name] = new OBJ.Mesh(data);
+              console.log('Total time: ' + (new Date() - start) / 1000);
             }
             else {
               error = true;
