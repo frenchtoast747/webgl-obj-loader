@@ -251,10 +251,7 @@
         new Ajax().get(nameAndURLs[mesh_name], (function(name) {
           return function (data, status) {
             if (status === 200) {
-              var start = new Date();
-              console.log('starting');
               meshes[name] = new OBJ.Mesh(data);
-              console.log('Total time: ' + (new Date() - start) / 1000);
             }
             else {
               error = true;
