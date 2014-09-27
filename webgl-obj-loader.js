@@ -61,10 +61,10 @@
            - take the 16th element from the [v] vertex array
            - take the 92nd element from the [vt] texture array
            - take the 11th element from the [vn] normal array
-         and together they make a unique Vertex.
+         and together they make a unique vertex.
      Using all 3+ unique Vertices from the face line will produce a polygon.
 
-     Now, you could just go through the OBJ file and create a new Vertex for
+     Now, you could just go through the OBJ file and create a new vertex for
      each face line and WebGL will draw what appears to be the same model.
      However, vertices will be overlapped and duplicated all over the place.
 
@@ -102,36 +102,36 @@
     var lines = objectData.split('\n'), i;
     for (i = 0; i < lines.length; i++) {
       // if this is a vertex
-      var line;
-      if (lines[i].trim().startsWith('v ')) {
-        line = lines[i].trim().split(/\s+/);
+      var line = lines[i].trim();
+      if (line.startsWith('v ')) {
+        line = line.split(/\s+/);
         line.shift();
         verts.push(line[0]);
         verts.push(line[1]);
         verts.push(line[2]);
-      } else if (lines[i].trim().startsWith('vn')) {
+      } else if (line.startsWith('vn')) {
         // if this is a vertex normal
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         vertNormals.push(line[0]);
         vertNormals.push(line[1]);
         vertNormals.push(line[2]);
-      } else if (lines[i].trim().startsWith('vt')) {
+      } else if (line.startsWith('vt')) {
         // if this is a texture
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         textures.push(line[0]);
         textures.push(line[1]);
-      } else if (lines[i].trim().startsWith('f ')) {
+      } else if (line.startsWith('f ')) {
         // if this is a face
         /*
-        split this face into an array of Vertex groups
+        split this face into an array of vertex groups
         for example:
            f 16/92/11 14/101/22 1/69/1
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = lines[i].trim().split(/\s+/);
+        line = line.split(/\s+/);
         line.shift();
         var quad = false;
         for (var j=0; j<line.length; j++){
@@ -150,29 +150,29 @@
             }
             else{
                 /*
-                Each element of the face line array is a Vertex which has its
+                Each element of the face line array is a vertex which has its
                 attributes delimited by a forward slash. This will separate
                 each attribute into another array:
                     '19/92/11'
                 becomes:
-                    Vertex = ['19', '92', '11'];
+                    vertex = ['19', '92', '11'];
                 where
-                    Vertex[0] is the vertex index
-                    Vertex[1] is the texture index
-                    Vertex[2] is the normal index
+                    vertex[0] is the vertex index
+                    vertex[1] is the texture index
+                    vertex[2] is the normal index
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
-                var Vertex = line[ j ].split( '/' );
+                var vertex = line[ j ].split( '/' );
                 /*
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
 
-                 Because it gets confusing by referring to Vertex and then
+                 Because it gets confusing by referring to vertex and then
                  vertex (both are different in my descriptions) I will explain
                  what's going on using the vertexNormals array:
 
-                 Vertex[2] will contain the one-based index of the vertexNormals
+                 vertex[2] will contain the one-based index of the vertexNormals
                  section (vn). One is subtracted from this index number to play
                  nice with javascript's zero-based array indexing.
 
@@ -184,16 +184,16 @@
                  This same process is repeated for verts and textures.
                  */
                 // vertex position
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 0]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 1]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 2]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 0]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 1]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 2]);
                 // vertex textures
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 0]);
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 1]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 0]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 1]);
                 // vertex normals
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 0]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 1]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 2]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 0]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 1]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 2]);
                 // add the newly created vertex to the list of indices
                 unpacked.hashindices[line[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
