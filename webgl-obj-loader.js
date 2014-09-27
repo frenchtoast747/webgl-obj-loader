@@ -1,6 +1,12 @@
 (function (window, document, undefined) {
   'use strict';
-
+  // Thanks to CMS for the startsWith function
+  // http://stackoverflow.com/questions/646628/javascript-startswith/646643#646643
+  if (typeof String.prototype.startsWith !== 'function') {
+    String.prototype.startsWith = function (str) {
+      return this.slice(0, str.length) === str;
+    };
+  }
   var OBJ = {};
   window.OBJ = OBJ;
 
@@ -55,10 +61,10 @@
            - take the 16th element from the [v] vertex array
            - take the 92nd element from the [vt] texture array
            - take the 11th element from the [vn] normal array
-         and together they make a unique Vertex.
+         and together they make a unique vertex.
      Using all 3+ unique Vertices from the face line will produce a polygon.
 
-     Now, you could just go through the OBJ file and create a new Vertex for
+     Now, you could just go through the OBJ file and create a new vertex for
      each face line and WebGL will draw what appears to be the same model.
      However, vertices will be overlapped and duplicated all over the place.
 
@@ -93,38 +99,42 @@
     unpacked.indices = [];
     unpacked.index = 0;
     // array of lines separated by the newline
-    var lines = objectData.split('\n');
-
-    const VERTEX_RE = /^v\s/;
-    const NORMAL_RE = /^vn\s/;
-    const TEXTURE_RE = /^vt\s/;
-    const FACE_RE = /^f\s/;
-    const WHITESPACE_RE = /\s+/;
-
-    for (var i = 0, lineLen = lines.length; i < lineLen; ++i) {
+    var lines = objectData.split('\n'), i;
+    for (i = 0; i < lines.length; i++) {
+      // if this is a vertex
       var line = lines[i].trim();
-      var elements = line.split(WHITESPACE_RE);
-      elements.shift();
-      if (VERTEX_RE.test(line)) {
-        // if this is a vertex
-        verts.push.apply(verts, elements);
-      } else if (NORMAL_RE.test(line)) {
+      if (line.startsWith('v ')) {
+        line = line.split(/\s+/);
+        line.shift();
+        verts.push(line[0]);
+        verts.push(line[1]);
+        verts.push(line[2]);
+      } else if (line.startsWith('vn')) {
         // if this is a vertex normal
-        vertNormals.push.apply(vertNormals, elements);
-      } else if (TEXTURE_RE.test(line)) {
+        line = line.split(/\s+/);
+        line.shift();
+        vertNormals.push(line[0]);
+        vertNormals.push(line[1]);
+        vertNormals.push(line[2]);
+      } else if (line.startsWith('vt')) {
         // if this is a texture
-        textures.push.apply(textures, elements);
-      } else if (FACE_RE.test(line)) {
+        line = line.split(/\s+/);
+        line.shift();
+        textures.push(line[0]);
+        textures.push(line[1]);
+      } else if (line.startsWith('f ')) {
         // if this is a face
         /*
-        split this face into an array of Vertex groups
+        split this face into an array of vertex groups
         for example:
            f 16/92/11 14/101/22 1/69/1
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
+        line = line.split(/\s+/);
+        line.shift();
         var quad = false;
-        for (var j = 0, eleLen = elements.length; j < eleLen; ++j){
+        for (var j=0; j<line.length; j++){
             // Triangulating quads
             // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
             // corresponding triangles:
@@ -135,8 +145,8 @@
                 j = 2;
                 quad = true;
             }
-            if(elements[j] in unpacked.hashindices){
-                unpacked.indices.push(unpacked.hashindices[elements[j]]);
+            if(line[j] in unpacked.hashindices){
+                unpacked.indices.push(unpacked.hashindices[line[j]]);
             }
             else{
                 /*
@@ -153,12 +163,12 @@
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
-                var vertex = elements[ j ].split( '/' );
+                var vertex = line[ j ].split( '/' );
                 /*
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
 
-                 Because it gets confusing by referring to Vertex and then
+                 Because it gets confusing by referring to vertex and then
                  vertex (both are different in my descriptions) I will explain
                  what's going on using the vertexNormals array:
 
@@ -174,28 +184,25 @@
                  This same process is repeated for verts and textures.
                  */
                 // vertex position
-                var vertIndex = (vertex[0] - 1) * 3;
-                unpacked.verts.push(verts[vertIndex    ],
-                                    verts[vertIndex + 1],
-                                    verts[vertIndex + 2]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 0]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 1]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 2]);
                 // vertex textures
-                var texIndex = (vertex[1] - 1) * 2;
-                unpacked.textures.push(textures[texIndex    ],
-                                       textures[texIndex + 1]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 0]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 1]);
                 // vertex normals
-                var normIndex = (vertex[2] - 1) * 3;
-                unpacked.norms.push(vertNormals[normIndex    ],
-                                    vertNormals[normIndex + 1],
-                                    vertNormals[normIndex + 2]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 0]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 1]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 2]);
                 // add the newly created vertex to the list of indices
-                unpacked.hashindices[vertex[j]] = unpacked.index;
+                unpacked.hashindices[line[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
                 // increment the counter
-                ++unpacked.index;
+                unpacked.index += 1;
             }
             if(j === 3 && quad) {
                 // add v0/t0/vn0 onto the second triangle
-                unpacked.indices.push(unpacked.hashindices[elements[0]]);
+                unpacked.indices.push( unpacked.hashindices[line[0]]);
             }
         }
       }
