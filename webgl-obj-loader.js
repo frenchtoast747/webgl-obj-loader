@@ -376,4 +376,11 @@
     mesh.indexBuffer.itemSize = 1;
     mesh.indexBuffer.numItems = mesh.indices.length;
   }
+
+  OBJ.deleteMeshBuffers = function( gl, mesh ){
+    gl.deleteBuffer(mesh.normalBuffer);
+    gl.deleteBuffer(mesh.textureBuffer);
+    gl.deleteBuffer(mesh.vertexBuffer);
+    gl.deleteBuffer(mesh.indexBuffer);
+  }
 })(this, document);

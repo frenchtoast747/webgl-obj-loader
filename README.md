@@ -191,6 +191,11 @@ gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
 gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 ```
 
+### deleteMeshBuffers(gl, mesh)
+Deletes the mesh's buffers, which you would do when deleting an object from a
+scene so that you don't leak video memory.  Excessive buffer creation and
+deletion leads to video memory fragmentation.  Beware.
+
 ## Demo
 http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
