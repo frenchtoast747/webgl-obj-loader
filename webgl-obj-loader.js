@@ -288,7 +288,7 @@
     }
   };
 
-  var buildBuffer = function( gl, type, data, itemSize ){
+  var _buildBuffer = function( gl, type, data, itemSize ){
     var buffer = gl.createBuffer();
     var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
     gl.bindBuffer(type, buffer);
