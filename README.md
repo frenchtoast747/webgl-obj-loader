@@ -1,5 +1,14 @@
 # webgl-obj-loader
-A simple script to help bring OBJ models to your WebGL world.
+A simple script to help bring OBJ models to your WebGL world. I originally
+wrote this script for my CS Graphics class so that we didn't have to only have
+cubes and spheres for models in order to learn WebGL. At the time, the only
+sort of model loader for WebGL was [Mr. Doob's ThreeJS](http://threejs.org/). And in order to use the
+loaders you had to use the entire framework (or do some very serious hacking
+and duct-taping in order get the model information). My main focus in creating
+this loader was to easily allow importing models without having to have special
+knowledge of a 3D graphics program (like Blender) while keeping it low-level
+enough so that the focus was on learning WebGL rather than learning some
+framework.
 
 ## Mesh(objStr)
 
