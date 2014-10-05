@@ -75,7 +75,7 @@ And in your `app.js`:
 ```javascript
 var gl = canvas.getContext('webgl');
 var objStr = document.getElementById('my_cube.obj').innerHTML;
-var mesh = new OBJ.mesh(objStr);
+var mesh = new OBJ.Mesh(objStr);
 
 // use the included helper function to initialize the VBOs
 // if you don't want to use this function, have a look at its
