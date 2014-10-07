@@ -1,5 +1,14 @@
 # webgl-obj-loader
-A simple script to help bring OBJ models to your WebGL world.
+A simple script to help bring OBJ models to your WebGL world. I originally
+wrote this script for my CS Graphics class so that we didn't have to only have
+cubes and spheres for models in order to learn WebGL. At the time, the only
+sort of model loader for WebGL was [Mr. Doob's ThreeJS](http://threejs.org/). And in order to use the
+loaders you had to use the entire framework (or do some very serious hacking
+and duct-taping in order get the model information). My main focus in creating
+this loader was to easily allow importing models without having to have special
+knowledge of a 3D graphics program (like Blender) while keeping it low-level
+enough so that the focus was on learning WebGL rather than learning some
+framework.
 
 ## Mesh(objStr)
 
@@ -13,6 +22,13 @@ information can then be used later on when creating your VBOs. Look at the
 * **vertexNormals:** an array containing the vertex normals that correspond to each unique face index. It is flat, just like `vertices`.
 * **textures:** an array containing the `s` and `t` (or `u` and `v`) coordinates for this mesh's texture. It is flat just like `vertices` except it goes by groups of 2 instead of 3.
 * **indices:** an array containing the indicies to be used in conjunction with the above three arrays in order to draw the triangles that make up faces. For example, `indices[42]` could contain the number `38`. This would then be used internally by WebGL on all three of the above arrays telling which vertex, normal, and texture coords to use: `vertices[38]`, `vertexNormals[38]`, and `textures[38]`.
+
+
+### Advanced Attributes
+* **tangents:** an array containing vector values of each *vertex* tangent. Corresponds to each vertex index. Structured exactly the same as **vertices**. You need this data if you intend to build a bump mapping shader.
+* **bitangents** an array nearly identical to the tangent array, except that each corresponding vector is perpendicular to the tangnent (obviously).
+
+
 
 ### Params:
 
@@ -66,7 +82,7 @@ And in your `app.js`:
 ```javascript
 var gl = canvas.getContext('webgl');
 var objStr = document.getElementById('my_cube.obj').innerHTML;
-var mesh = new OBJ.mesh(objStr);
+var mesh = new OBJ.Mesh(objStr);
 
 // use the included helper function to initialize the VBOs
 // if you don't want to use this function, have a look at its
@@ -89,6 +105,10 @@ the newly created meshes.
 
 **Note:** In order to use this function as a way to download meshes, a
 webserver of some sort must be used.
+
+### calculateTangentVectors() 
+
+Calculates the tangent and bitangent vertex data, useful if one desires to create a normal map shader. Call this **after** OBJ.Mesh(). Will store the new vertex data in OBJ.tangents, OBJ.bitangents.
 
 #### Params:
 
@@ -190,6 +210,11 @@ gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, mesh.normalBuffer.it
 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
 gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 ```
+
+### deleteMeshBuffers(gl, mesh)
+Deletes the mesh's buffers, which you would do when deleting an object from a
+scene so that you don't leak video memory.  Excessive buffer creation and
+deletion leads to video memory fragmentation.  Beware.
 
 ## Demo
 http://frenchtoast747.github.com/webgl-obj-loader/

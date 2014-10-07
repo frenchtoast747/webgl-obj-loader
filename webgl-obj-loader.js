@@ -1,14 +1,33 @@
-(function (window, document, undefined) {
+(function (window, undefined) {
   'use strict';
-  // Thanks to CMS for the startsWith function
-  // http://stackoverflow.com/questions/646628/javascript-startswith/646643#646643
-  if (typeof String.prototype.startsWith !== 'function') {
-    String.prototype.startsWith = function (str) {
-      return this.slice(0, str.length) === str;
-    };
-  }
   var OBJ = {};
   window.OBJ = OBJ;
+
+    function vecSub(vec1, vec2) {
+        var newArray = vec1.slice(0);
+        for (var i = 0; i<newArray.length; i++) {
+            newArray[i] = newArray[i]-vec2[i]; 
+        }
+        return newArray;
+    };
+
+    function vecAdd(vec1, vec2) {
+        var newArray = vec1.slice(0);
+        for (var i = 0; i<newArray.length; i++) {
+            newArray[i] = newArray[i]+vec2[i]; 
+        }
+        return newArray;
+    };
+
+
+    function vecScalarMul(vec1, scalar) {
+        var newArray = vec1.slice(0);
+        for (var i = 0; i<newArray.length; i++) {
+            newArray[i] = newArray[i]*scalar; 
+        }
+        return newArray;
+    };
+
 
   /**
    * The main Mesh class. The constructor will parse through the OBJ file data
@@ -61,10 +80,10 @@
            - take the 16th element from the [v] vertex array
            - take the 92nd element from the [vt] texture array
            - take the 11th element from the [vn] normal array
-         and together they make a unique Vertex.
+         and together they make a unique vertex.
      Using all 3+ unique Vertices from the face line will produce a polygon.
 
-     Now, you could just go through the OBJ file and create a new Vertex for
+     Now, you could just go through the OBJ file and create a new vertex for
      each face line and WebGL will draw what appears to be the same model.
      However, vertices will be overlapped and duplicated all over the place.
 
@@ -99,42 +118,39 @@
     unpacked.indices = [];
     unpacked.index = 0;
     // array of lines separated by the newline
-    var lines = objectData.split('\n'), i;
-    for (i = 0; i < lines.length; i++) {
-      // if this is a vertex
-      var line;
-      if (lines[i].trim().startsWith('v ')) {
-        line = lines[i].trim().split(/\s+/);
-        line.shift();
-        verts.push(line[0]);
-        verts.push(line[1]);
-        verts.push(line[2]);
-      } else if (lines[i].trim().startsWith('vn')) {
+    var lines = objectData.split('\n');
+    
+    var VERTEX_RE = /^v\s/;
+    var NORMAL_RE = /^vn\s/;
+    var TEXTURE_RE = /^vt\s/;
+    var FACE_RE = /^f\s/;
+    var WHITESPACE_RE = /\s+/;
+    
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      var elements = line.split(WHITESPACE_RE);
+      elements.shift();
+      
+      if (VERTEX_RE.test(line)) {
+        // if this is a vertex
+        verts.push.apply(verts, elements);
+      } else if (NORMAL_RE.test(line)) {
         // if this is a vertex normal
-        line = lines[i].trim().split(/\s+/);
-        line.shift();
-        vertNormals.push(line[0]);
-        vertNormals.push(line[1]);
-        vertNormals.push(line[2]);
-      } else if (lines[i].trim().startsWith('vt')) {
+        vertNormals.push.apply(vertNormals, elements);
+      } else if (TEXTURE_RE.test(line)) {
         // if this is a texture
-        line = lines[i].trim().split(/\s+/);
-        line.shift();
-        textures.push(line[0]);
-        textures.push(line[1]);
-      } else if (lines[i].trim().startsWith('f ')) {
+        textures.push.apply(textures, elements);
+      } else if (FACE_RE.test(line)) {
         // if this is a face
         /*
-        split this face into an array of Vertex groups
+        split this face into an array of vertex groups
         for example:
            f 16/92/11 14/101/22 1/69/1
         becomes:
           ['16/92/11', '14/101/22', '1/69/1'];
         */
-        line = lines[i].trim().split(/\s+/);
-        line.shift();
         var quad = false;
-        for (var j=0; j<line.length; j++){
+        for (var j = 0, eleLen = elements.length; j < eleLen; j++){
             // Triangulating quads
             // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
             // corresponding triangles:
@@ -145,34 +161,34 @@
                 j = 2;
                 quad = true;
             }
-            if(line[j] in unpacked.hashindices){
-                unpacked.indices.push(unpacked.hashindices[line[j]]);
+            if(elements[j] in unpacked.hashindices){
+                unpacked.indices.push(unpacked.hashindices[elements[j]]);
             }
             else{
                 /*
-                Each element of the face line array is a Vertex which has its
+                Each element of the face line array is a vertex which has its
                 attributes delimited by a forward slash. This will separate
                 each attribute into another array:
                     '19/92/11'
                 becomes:
-                    Vertex = ['19', '92', '11'];
+                    vertex = ['19', '92', '11'];
                 where
-                    Vertex[0] is the vertex index
-                    Vertex[1] is the texture index
-                    Vertex[2] is the normal index
+                    vertex[0] is the vertex index
+                    vertex[1] is the texture index
+                    vertex[2] is the normal index
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
-                var Vertex = line[ j ].split( '/' );
+                var vertex = elements[ j ].split( '/' );
                 /*
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
 
-                 Because it gets confusing by referring to Vertex and then
+                 Because it gets confusing by referring to vertex and then
                  vertex (both are different in my descriptions) I will explain
                  what's going on using the vertexNormals array:
 
-                 Vertex[2] will contain the one-based index of the vertexNormals
+                 vertex[2] will contain the one-based index of the vertexNormals
                  section (vn). One is subtracted from this index number to play
                  nice with javascript's zero-based array indexing.
 
@@ -184,25 +200,25 @@
                  This same process is repeated for verts and textures.
                  */
                 // vertex position
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 0]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 1]);
-                unpacked.verts.push(verts[(Vertex[0] - 1) * 3 + 2]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 0]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 1]);
+                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 2]);
                 // vertex textures
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 0]);
-                unpacked.textures.push(textures[(Vertex[1] - 1) * 2 + 1]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 0]);
+                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 1]);
                 // vertex normals
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 0]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 1]);
-                unpacked.norms.push(vertNormals[(Vertex[2] - 1) * 3 + 2]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 0]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 1]);
+                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 2]);
                 // add the newly created vertex to the list of indices
-                unpacked.hashindices[line[j]] = unpacked.index;
+                unpacked.hashindices[elements[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
                 // increment the counter
                 unpacked.index += 1;
             }
             if(j === 3 && quad) {
                 // add v0/t0/vn0 onto the second triangle
-                unpacked.indices.push( unpacked.hashindices[line[0]]);
+                unpacked.indices.push( unpacked.hashindices[elements[0]]);
             }
         }
       }
@@ -211,7 +227,89 @@
     this.vertexNormals = unpacked.norms;
     this.textures = unpacked.textures;
     this.indices = unpacked.indices;
+
+
+
+    this.unpacked.tangents = [];
+    this.unpacked.bitangents = [];
+
+	if (calculatetangents) { 
   }
+
+/**
+ * calculatetangentVectors()
+ *
+ * When called takes in the vertex data and the UV data and creates two arrays with the bitangent and tangent vectors. Very useful for more * advanced shaders
+ *
+ * Bitangents are returned to OBJ.bitangents
+ *
+ * Tangents are return to OBJ.tangents
+**/
+Obj.calculateTangentVectors = function () {
+
+    this.unpacked.tangents = [];
+    this.unpacked.bitangents = [];
+
+ 	// The vertex data needs to be calculated before the calculation of the (bi)tangents
+	for (var location = 0; location<this.indices.length; location+=3) {
+			// Recontructing each vertex and UV corodinate into the repective vectors.
+			var index = this.indices[location];
+			
+			var v0 = this.vertices.slice(index*3, (index*3)+3);
+			var uv0 = this.textures.slice(index*2, (index*2)+2);
+
+			index=this.indices[location+1];
+				
+			var v1 = this.vertices.slice(index*3, (index*3)+3);
+			var uv1 = this.textures.slice(index*2, (index*2)+2);
+
+			index=this.indices[location+2];
+
+			var v2 = this.vertices.slice(index*3, (index*3)+3);
+			var uv2 = this.textures.slice(index*2, (index*2)+2);
+
+			var deltaPos1 = vecSub(v1, v0);
+			var deltaPos2 = vecSub(v2, v0);
+
+			var deltaUV1 = vecSub(uv1, uv0);
+			var deltaUV2 = vecSub(uv2, uv0);
+
+			var r = 1/((deltaUV1[0] * deltaUV2[1]) - (deltaUV1[1] * deltaUV2[0]));
+
+				// Simple (bi)tangent formula used.
+				// Wrote my own Vector functions to eleminiate dependancy on the glMatrix.js lib.
+
+			var tangent = vecScalarMul(
+				vecSub(
+				vecScalarMul(deltaPos1, deltaUV2[1]), vecScalarMul(deltaPos2, deltaUV1[1])
+				),
+				r
+			);
+
+			var bitangent = vecScalarMul(
+				vecSub(
+				vecScalarMul(deltaPos2, deltaUV1[0]), vecScalarMul(deltaPos1, deltaUV2[0])
+				),
+				-r
+			);
+			// Average the value of the vectors outs
+			for (var v = 0; v < 3; v++) {
+				var addTo = this.indices[location+v];
+				if (typeof unpacked.tangents[addTo] != "undefined") {
+					unpacked.tangents[addTo] = vecAdd(unpacked.tangents[addTo], tangent);
+					unpacked.bitangents[addTo] = vecAdd(unpacked.bitangents[addTo], bitangent);
+				} else {
+					unpacked.tangents[addTo] =tangent;
+					unpacked.bitangents[addTo] =bitangent;
+				}
+			}
+	}
+	// Decontructing the vectors back into the 1D array for Web GL
+	for(var i = 0; i < unpacked.tangents.length; i++) {
+			this.tangents = this.tangents.concat(unpacked.tangents[i]);
+			this.bitangents = this.bitangents.concat(unpacked.bitangents[i]);
+	}
+} 
 
   var Ajax = function(){
     // this is just a helper class to ease ajax calls
@@ -288,6 +386,16 @@
     }
   };
 
+  var _buildBuffer = function( gl, type, data, itemSize ){
+    var buffer = gl.createBuffer();
+    var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
+    gl.bindBuffer(type, buffer);
+    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
+    buffer.itemSize = itemSize;
+    buffer.numItems = data.length / itemSize;
+    return buffer;
+  }
+
   /**
    * Takes in the WebGL context and a Mesh, then creates and appends the buffers
    * to the mesh object as attributes.
@@ -352,28 +460,18 @@
    *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
    */
   OBJ.initMeshBuffers = function( gl, mesh ){
-    mesh.normalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertexNormals), gl.STATIC_DRAW);
-    mesh.normalBuffer.itemSize = 3;
-    mesh.normalBuffer.numItems = mesh.vertexNormals.length / 3;
-
-    mesh.textureBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.textures), gl.STATIC_DRAW);
-    mesh.textureBuffer.itemSize = 2;
-    mesh.textureBuffer.numItems = mesh.textures.length / 2;
-
-    mesh.vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.vertices), gl.STATIC_DRAW);
-    mesh.vertexBuffer.itemSize = 3;
-    mesh.vertexBuffer.numItems = mesh.vertices.length / 3;
-
-    mesh.indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_DRAW);
-    mesh.indexBuffer.itemSize = 1;
-    mesh.indexBuffer.numItems = mesh.indices.length;
+    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
+    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, 2);
+    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
+    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
   }
-})(this, document);
+
+  OBJ.deleteMeshBuffers = function( gl, mesh ){
+    gl.deleteBuffer(mesh.normalBuffer);
+    gl.deleteBuffer(mesh.textureBuffer);
+    gl.deleteBuffer(mesh.vertexBuffer);
+    gl.deleteBuffer(mesh.indexBuffer);
+  }
+
+})(this);
+
