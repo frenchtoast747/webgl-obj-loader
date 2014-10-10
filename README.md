@@ -205,6 +205,22 @@ Deletes the mesh's buffers, which you would do when deleting an object from a
 scene so that you don't leak video memory.  Excessive buffer creation and
 deletion leads to video memory fragmentation.  Beware.
 
+## Node.js
+`npm install webgl-obj-loader`
+
+```javascript
+var fs = require('fs');
+var OBJ = require('webgl-obj-loader');
+
+var meshPath = './development/models/sphere.obj';
+var opt = { encoding: 'utf8' };
+
+fs.readFile(meshPath, opt, function (err, data){
+  if (err) return console.error(err);
+  var mesh = new OBJ.Mesh(data);
+});
+```
+
 ## Demo
 http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.

@@ -1,7 +1,13 @@
-(function (window, undefined) {
+(function (undefined) {
   'use strict';
+
   var OBJ = {};
-  window.OBJ = OBJ;
+
+  if (typeof module !== 'undefined') {
+    module.exports = OBJ;
+  } else {
+    window.OBJ = OBJ;
+  }
 
   /**
    * The main Mesh class. The constructor will parse through the OBJ file data
@@ -364,5 +370,5 @@
     gl.deleteBuffer(mesh.vertexBuffer);
     gl.deleteBuffer(mesh.indexBuffer);
   }
+})();
 
-})(this);

@@ -1,0 +1,30 @@
+{
+  "name": "webgl-obj-loader",
+  "version": "0.1.0",
+  "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
+  "main": "webgl-obj-loader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frenchtoast747/webgl-obj-loader.git"
+  },
+  "keywords": [
+    "obj",
+    "mesh",
+    "load",
+    "webgl",
+    "parse",
+    "vertex",
+    "index",
+    "normal",
+    "texture"
+  ],
+  "author": "Aaron Boman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/frenchtoast747/webgl-obj-loader/issues"
+  },
+  "homepage": "https://github.com/frenchtoast747/webgl-obj-loader"
+}
