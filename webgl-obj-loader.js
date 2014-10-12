@@ -180,16 +180,16 @@
                  This same process is repeated for verts and textures.
                  */
                 // vertex position
-                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 0]);
-                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 1]);
-                unpacked.verts.push(verts[(vertex[0] - 1) * 3 + 2]);
+                unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 0]);
+                unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 1]);
+                unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
                 // vertex textures
-                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 0]);
-                unpacked.textures.push(textures[(vertex[1] - 1) * 2 + 1]);
+                unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 0]);
+                unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 1]);
                 // vertex normals
-                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 0]);
-                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 1]);
-                unpacked.norms.push(vertNormals[(vertex[2] - 1) * 3 + 2]);
+                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
+                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
+                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
                 // add the newly created vertex to the list of indices
                 unpacked.hashindices[elements[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);

@@ -1,6 +1,6 @@
 {
   "name": "webgl-obj-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
   "main": "webgl-obj-loader.js",
   "scripts": {
