@@ -238,6 +238,9 @@ http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
+**0.1.1**
+* Support for NodeJS.
+
 **0.1.0**
 * Dropped jQuery dependency: `downloadMeshes` no longer requires jQuery to ajax in the OBJ files.
 * changed namespace to something a little shorter: `OBJ`
