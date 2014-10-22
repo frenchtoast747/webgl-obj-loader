@@ -99,18 +99,18 @@
     unpacked.index = 0;
     // array of lines separated by the newline
     var lines = objectData.split('\n');
-    
+
     var VERTEX_RE = /^v\s/;
     var NORMAL_RE = /^vn\s/;
     var TEXTURE_RE = /^vt\s/;
     var FACE_RE = /^f\s/;
     var WHITESPACE_RE = /\s+/;
-    
+
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
       var elements = line.split(WHITESPACE_RE);
       elements.shift();
-      
+
       if (VERTEX_RE.test(line)) {
         // if this is a vertex
         verts.push.apply(verts, elements);
@@ -349,9 +349,20 @@
    *     // now to render the mesh
    *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
    *     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-   *
-   *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
-   *     gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+   *     // it's possible that the mesh doesn't contain
+   *     // any texture coordinates (e.g. suzanne.obj in the development branch).
+   *     // in this case, the texture vertexAttribArray will need to be disabled
+   *     // before the call to drawElements
+   *     if(!mesh.textures.length){
+   *       gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
+   *     }
+   *     else{
+   *       // if the texture vertexAttribArray has been previously
+   *       // disabled, then it needs to be re-enabled
+   *       gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+   *       gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
+   *       gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+   *     }
    *
    *     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
    *     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
