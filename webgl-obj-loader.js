@@ -1,4 +1,4 @@
-(function (undefined) {
+(function (scope, undefined) {
   'use strict';
 
   var OBJ = {};
@@ -6,7 +6,7 @@
   if (typeof module !== 'undefined') {
     module.exports = OBJ;
   } else {
-    window.OBJ = OBJ;
+    scope.OBJ = OBJ;
   }
 
   /**
@@ -383,5 +383,5 @@
     gl.deleteBuffer(mesh.vertexBuffer);
     gl.deleteBuffer(mesh.indexBuffer);
   }
-})();
+})(this);
 
