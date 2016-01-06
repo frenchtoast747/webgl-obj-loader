@@ -210,6 +210,58 @@
     this.textures = unpacked.textures;
     this.indices = unpacked.indices;
   }
+  
+  /**
+   * https://en.wikipedia.org/wiki/Wavefront_.obj_file
+   * http://paulbourke.net/dataformats/mtl/
+   */
+  OBJ.Material = function(objectData){
+      // The values for the following attibutes
+      // are an array of R, G, B normalized values.
+      // Ka
+      this.ambient = [0, 0, 0];
+      // Kd
+      this.diffuse = [0, 0, 0];
+      // Ks
+      this.specular = [0, 0, 0];
+      // valid range is between 0 and 1000
+      this.specular_exponent = 0;
+      // either d or Tr; valid values are normalized
+      this.transparency = 0;
+      /*
+      Illumination models available:
+      0. Color on and Ambient off
+      1. Color on and Ambient on
+      2. Highlight on
+      3. Reflection on and Ray trace on
+      4. Transparency: Glass on, Reflection: Ray trace on
+      5. Reflection: Fresnel on and Ray trace on
+      6. Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
+      7. Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
+      8. Reflection on and Ray trace off
+      9. Transparency: Glass on, Reflection: Ray trace off
+      10. Casts shadows onto invisible surfaces
+      
+      e.g. illum 2
+      */
+      this.illumination = 0;
+      // map_Kd
+      this.map_diffuse = '';
+      // map_Ka
+      this.map_ambient = '';
+      // map_Ks
+      this.map_specular = '';
+      // map_Ns
+      this.map_specular_component = '';
+      // map_d
+      this.map_alpha = '';
+      // map_bump or bump
+      this.map_bump = '';
+      // disp
+      this.map_displacement = '';
+      // decal
+      this.map_decal = '';
+  }
 
   var Ajax = function(){
     // this is just a helper class to ease ajax calls
