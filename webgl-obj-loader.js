@@ -33,7 +33,12 @@
      unique vertices.
 
      Each line of the faces section contains a list of
-     (vertex, [texture], normal) groups
+     (vertex, [texture], normal) groups.
+
+     **Note:** The following documentation will use a capital "V" Vertex to
+     denote the above (vertex, [texture], normal) groups whereas a lowercase
+     "v" vertex is used to denote an X, Y, Z coordinate.
+
      Some examples:
          // the texture index is optional, both formats are possible for models
          // without a texture applied
@@ -123,7 +128,7 @@
       } else if (FACE_RE.test(line)) {
         // if this is a face
         /*
-        split this face into an array of vertex groups
+        split this face into an array of Vertex groups
         for example:
            f 16/92/11 14/101/22 1/69/1
         becomes:
@@ -146,16 +151,16 @@
             }
             else{
                 /*
-                Each element of the face line array is a vertex which has its
+                Each element of the face line array is a Vertex which has its
                 attributes delimited by a forward slash. This will separate
                 each attribute into another array:
                     '19/92/11'
                 becomes:
-                    vertex = ['19', '92', '11'];
+                    Vertex = ['19', '92', '11'];
                 where
-                    vertex[0] is the vertex index
-                    vertex[1] is the texture index
-                    vertex[2] is the normal index
+                    Vertex[0] is the vertex index
+                    Vertex[1] is the texture index
+                    Vertex[2] is the normal index
                  Think of faces having Vertices which are comprised of the
                  attributes location (v), texture (vt), and normal (vn).
                  */
@@ -164,7 +169,7 @@
                  The verts, textures, and vertNormals arrays each contain a
                  flattend array of coordinates.
 
-                 Because it gets confusing by referring to vertex and then
+                 Because it gets confusing by referring to Vertex and then
                  vertex (both are different in my descriptions) I will explain
                  what's going on using the vertexNormals array:
 
@@ -179,20 +184,20 @@
 
                  This same process is repeated for verts and textures.
                  */
-                // vertex position
+                // Vertex position
                 unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 0]);
                 unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 1]);
                 unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
-                // vertex textures
+                // Vertex textures
                 if (textures.length) {
                   unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 0]);
                   unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 1]);
                 }
-                // vertex normals
+                // Vertex normals
                 unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
                 unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
                 unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
-                // add the newly created vertex to the list of indices
+                // add the newly created Vertex to the list of indices
                 unpacked.hashindices[elements[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
                 // increment the counter
@@ -210,12 +215,14 @@
     this.textures = unpacked.textures;
     this.indices = unpacked.indices;
   }
-  
+
   /**
    * https://en.wikipedia.org/wiki/Wavefront_.obj_file
    * http://paulbourke.net/dataformats/mtl/
    */
   OBJ.Material = function(objectData){
+      // the unique material ID.
+      this.name = ''
       // The values for the following attibutes
       // are an array of R, G, B normalized values.
       // Ka
@@ -241,7 +248,7 @@
       8. Reflection on and Ray trace off
       9. Transparency: Glass on, Reflection: Ray trace off
       10. Casts shadows onto invisible surfaces
-      
+
       e.g. illum 2
       */
       this.illumination = 0;
@@ -436,4 +443,3 @@
     gl.deleteBuffer(mesh.indexBuffer);
   }
 })(this);
-
