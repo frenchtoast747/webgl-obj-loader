@@ -30,85 +30,39 @@
 
     uniform float uMaterialShininess;
 
-    const float spotExponent = 40.0;
-    const float flashSpotExponent = 50.0;
-    const float spotCosCutoff = 0.9;   // corresponds to 14 degrees
-    const float flashSpotCosCutoff = 0.9;   // corresponds to 14 degrees
+    vec2 pointlight(vec3 pos, vec3 surface, vec3 normal) {
+      vec3 vectorToLightSource = (pos - surface);
+      vec3 normalToLightSource = normalize(vectorToLightSource);
+      vec3 reflectionVector = normalize(reflect(vectorToLightSource, normal));
+      vec3 viewVectorEye = normalize(vPosition.xyz / vPosition.w);
+      float specular = max(dot(reflectionVector, viewVectorEye), 0.0);
+      float shading = clamp(dot(normalToLightSource, normal), 0.0, 1.0);
+      float falloff = clamp(1.0/dot(vectorToLightSource, vectorToLightSource), 0.0, 1.0);
+      float diffuse = shading*falloff;
+      return vec2(diffuse, specular);
+    }
 
-    vec3 lightWeighting = vec3( 0.0, 0.0, 0.0 );
-    vec3 flashlightWeighting = vec3( 0.0, 0.0, 0.0 );
-    vec4 fragmentColor;
-    float spotEffect, rdotv, specularLightWeighting, diffuseLightWeighting;
+    vec2 spotlight(vec3 pos, vec3 dir, vec3 surface, vec3 normal, float angle, float fuzz_angle) {
+      float cutoff1 = cos(angle/2.0);
+      float cutoff2 = cos((angle-fuzz_angle)/2.0);
+      vec3 normalToLightSource = normalize(pos - surface);
+      float insideCone = -dot(normalToLightSource, dir);
+      return smoothstep(cutoff1, cutoff2, insideCone) * pointlight(pos, surface, normal);
+    }
 
     void main(void) {
-      const float LOG2 = 1.442695;
-      float z = gl_FragCoord.z / gl_FragCoord.w;
-      float fogFactor = exp2( -0.5 *
-                 0.2 *
-                 z *
-                 z *
-                 LOG2 );
-      fogFactor = clamp(fogFactor, 0.0, 1.0);
+      vec2 lights = vec2(0.0, 0.0);
+      // spotlight
+      lights += 1.0 * spotlight(uLightLocation, normalize(uSpotDirection), vPosition.xyz, vTransformedNormal, 3.14/4.0, 3.14/90.0);
+      // flashlight
+      lights += float(uHasFlashlight) * 2.0 * spotlight(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1), vPosition.xyz, vTransformedNormal, 3.14/8.0, 3.14/180.0);
+      // fog light
+      lights += 2.0 * pointlight(vec3(0.0, 0.0, 0.0), vPosition.xyz, vTransformedNormal);
 
-      vec3 vectorToLightSource = normalize(uLightLocation - vPosition.xyz / vPosition.w);
-
-      diffuseLightWeighting = max(dot(vTransformedNormal, vectorToLightSource), 0.0);
-
-      if (diffuseLightWeighting > 0.0) {
-        spotEffect = dot(normalize(uSpotDirection), normalize(-vectorToLightSource));
-
-        if (spotEffect > spotCosCutoff) {
-          spotEffect = pow(spotEffect, spotExponent);
-
-          vec3 reflectionVector = normalize(reflect(-vectorToLightSource, vTransformedNormal));
-
-          vec3 viewVectorEye = -normalize(vPosition.xyz / vPosition.w);
-          rdotv = max(dot(reflectionVector, viewVectorEye), 0.0);
-          specularLightWeighting = pow(rdotv, uMaterialShininess);
-
-          lightWeighting =
-            spotEffect * uLightDiffuseColor * diffuseLightWeighting +
-            spotEffect * uLightSpecularColor * specularLightWeighting;
-        }
-      }
-
-      if( uHasFlashlight ){
-        vec3 flashlightLocation = vec3(0,0,0);
-        vec3 flashlightVector = vec3(0,0,-1);
-
-        vectorToLightSource = normalize(flashlightLocation - vPosition.xyz / vPosition.w);
-        diffuseLightWeighting = max(dot(vTransformedNormal, vectorToLightSource), 0.0);
-
-        if (diffuseLightWeighting > 0.0) {
-          spotEffect = dot(normalize(flashlightVector), normalize(-vectorToLightSource));
-
-          if (spotEffect > flashSpotCosCutoff) {
-            spotEffect = pow(spotEffect, flashSpotExponent);
-
-            vec3 reflectionVector = normalize(reflect(-vectorToLightSource, vTransformedNormal));
-
-            vec3 viewVectorEye = -normalize(vPosition.xyz / vPosition.w);
-            rdotv = max(dot(reflectionVector, viewVectorEye), 0.0);
-            specularLightWeighting = pow(rdotv, uMaterialShininess);
-
-            flashlightWeighting =
-              spotEffect * (uLightDiffuseColor + vec3( 2.0,2.0,2.0 ) )* diffuseLightWeighting +
-              spotEffect * uLightSpecularColor * specularLightWeighting;
-          }
-        }
-      }
-
-      lightWeighting += uAmbientColor;
-      lightWeighting += flashlightWeighting;
-      if(uHasTexure){
-        vec4 fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-        gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
-        gl_FragColor = mix(vec4(0.0,0.0,0.0,1.0), gl_FragColor, fogFactor);
-      }
-      else{
-        gl_FragColor = vec4(uColor.rgb * lightWeighting, uColor.a);
-        gl_FragColor = mix(vec4(0.0,0.0,0.0,1.0), gl_FragColor, fogFactor);
-      }
+      vec4 color = mix(uColor, texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)), float(uHasTexure));
+      vec3 diffuse = color.rgb * lights[0];
+      vec3 specular = uLightSpecularColor * lights[1]*uMaterialShininess;
+      gl_FragColor = vec4(diffuse + specular, 1.0);
     }
   </script>
 

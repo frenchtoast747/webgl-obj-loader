@@ -84,12 +84,15 @@ function drawMonkeyRoom(){
   // camera position and rotations
   mat4.rotate( app.mvMatrix, degToRad( app.camera.pitch ), [1,0,0] );
   // account for pitch rotation and light down vector
-  mat4.multiplyVec3( app.mvMatrix, app.lightVectorStatic, app.lightVector )
   mat4.rotate( app.mvMatrix, degToRad( app.camera.heading ), [0,1,0] );
   mat4.translate( app.mvMatrix, app.camera.inversePosition );
   
   gl.useProgram( shaderProgram );
   
+  var normalMatrix = mat3.create();
+  mat4.toInverseMat3(app.mvMatrix, normalMatrix);
+  mat3.transpose(normalMatrix);
+  mat3.multiplyVec3( normalMatrix, app.lightVectorStatic, app.lightVector )
   mat4.multiplyVec3( app.mvMatrix, app.lightLocationStatic, app.lightLocation )
   gl.uniform3fv( shaderProgram.lightLocation, app.lightLocation );
   gl.uniform3fv( shaderProgram.lightVector, app.lightVector );
@@ -109,6 +112,7 @@ function drawMonkeyRoom(){
       mvPushMatrix();
         mat4.rotate( app.mvMatrix, degToRad( 180 ), [0,1,0] );
         mat4.translate( app.mvMatrix, app.monkey.position );
+        gl.uniform3fv( shaderProgram.lightSpecularColor, lightIntesity( 0.5, 1.0, 1.0, 0.1 ) );
         drawObject( app.models.suzanne, 100, [0.83,0.69,0.22,1.0] );
       mvPopMatrix();
       

@@ -59,14 +59,6 @@ var app = {};
   // which function to use to draw
   app.drawScene;
   app.scenechange = false;
-  // room light
-  app.lightLocationStatic = [0,2,0];
-  app.lightVectorStatic = [0,-1,0];
-  app.lightLocation = vec3.create();
-  app.lightVector = vec3.create();
-  app.ambientIntensity = 0.5;
-  app.diffuseIntensity = 2.0;
-  app.hasFlashlight = false;
   // particles
   app.particles = {};
   app.particles.min = [-0.5,0.3,-0.1];
