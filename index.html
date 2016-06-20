@@ -10,6 +10,8 @@
   <!-- Main Shader -->
 
   <script id="shader-fs" type="x-shader/x-fragment">
+    #version 100
+    #define M_PI 3.1415926535897932384626433832795
     precision mediump float;
 
     varying vec2 vTextureCoord;
@@ -30,8 +32,13 @@
 
     uniform float uMaterialShininess;
 
-    vec2 pointlight(vec3 pos, vec3 surface, vec3 normal) {
-      vec3 vectorToLightSource = (pos - surface);
+    struct Pointlight {
+      vec3 pos;
+      float intensity;
+    };
+
+    vec2 pointlight(Pointlight light, vec3 surface, vec3 normal) {
+      vec3 vectorToLightSource = (light.pos - surface);
       vec3 normalToLightSource = normalize(vectorToLightSource);
       vec3 reflectionVector = normalize(reflect(vectorToLightSource, normal));
       vec3 viewVectorEye = normalize(vPosition.xyz / vPosition.w);
@@ -39,25 +46,43 @@
       float shading = clamp(dot(normalToLightSource, normal), 0.0, 1.0);
       float falloff = clamp(1.0/dot(vectorToLightSource, vectorToLightSource), 0.0, 1.0);
       float diffuse = shading*falloff;
-      return vec2(diffuse, specular);
+      return light.intensity * vec2(diffuse, specular);
     }
 
-    vec2 spotlight(vec3 pos, vec3 dir, vec3 surface, vec3 normal, float angle, float fuzz_angle) {
-      float cutoff1 = cos(angle/2.0);
-      float cutoff2 = cos((angle-fuzz_angle)/2.0);
-      vec3 normalToLightSource = normalize(pos - surface);
-      float insideCone = -dot(normalToLightSource, dir);
-      return smoothstep(cutoff1, cutoff2, insideCone) * pointlight(pos, surface, normal);
+    struct Spotlight {
+      vec3 pos;
+      vec3 dir;
+      float intensity;
+      float angle;
+      float fuzz_angle;
+    };
+
+    vec2 spotlight(Spotlight light, vec3 surface, vec3 normal) {
+      float cutoff1 = cos(light.angle/2.0);
+      float cutoff2 = cos((light.angle-light.fuzz_angle)/2.0);
+      vec3 normalToLightSource = normalize(light.pos - surface);
+      float insideCone = -dot(normalToLightSource, light.dir);
+      return smoothstep(cutoff1, cutoff2, insideCone) * pointlight(Pointlight(light.pos, light.intensity), surface, normal);
     }
+
+    const Spotlight flashlight = Spotlight(vec3(0.0, 0.0, 0.0),
+                                           vec3(0.0, 0.0, -1.0),
+                                           2.0,
+                                           M_PI / 8.0,
+                                           M_PI / 180.0);
 
     void main(void) {
+      Spotlight ceilinglight = Spotlight(uLightLocation,
+                                         normalize(uSpotDirection),
+                                         1.0,
+                                         M_PI / 4.0,
+                                         M_PI / 90.0);
+      Pointlight foglight = Pointlight(vec3(0.0, 0.0, 0.0),
+                                       2.0);
       vec2 lights = vec2(0.0, 0.0);
-      // spotlight
-      lights += 1.0 * spotlight(uLightLocation, normalize(uSpotDirection), vPosition.xyz, vTransformedNormal, 3.14/4.0, 3.14/90.0);
-      // flashlight
-      lights += float(uHasFlashlight) * 2.0 * spotlight(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1), vPosition.xyz, vTransformedNormal, 3.14/8.0, 3.14/180.0);
-      // fog light
-      lights += 2.0 * pointlight(vec3(0.0, 0.0, 0.0), vPosition.xyz, vTransformedNormal);
+      lights += spotlight(ceilinglight, vPosition.xyz, vTransformedNormal);
+      lights += float(uHasFlashlight) * spotlight(flashlight, vPosition.xyz, vTransformedNormal);
+      lights += pointlight(foglight, vPosition.xyz, vTransformedNormal);
 
       vec4 color = mix(uColor, texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)), float(uHasTexure));
       vec3 diffuse = color.rgb * lights[0];
