@@ -113,12 +113,16 @@
 
       if (VERTEX_RE.test(line)) {
         // if this is a vertex
+        // DIscard optional [w] coordinate if present
+        elements.length = 3;
         verts.push.apply(verts, elements);
       } else if (NORMAL_RE.test(line)) {
         // if this is a vertex normal
         vertNormals.push.apply(vertNormals, elements);
       } else if (TEXTURE_RE.test(line)) {
         // if this is a texture
+        // Discard optional [w] coordinate if present
+        elements.length = 2;
         textures.push.apply(textures, elements);
       } else if (FACE_RE.test(line)) {
         // if this is a face
@@ -188,10 +192,18 @@
                   unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 0]);
                   unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 1]);
                 }
-                // vertex normals
-                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
-                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
-                unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
+                // Vertex normals when format f v/vn
+                else if (vertex.length === 2) {
+                  unpacked.norms.push(+vertNormals[(vertex[1] - 1) * 3 + 0]);
+                  unpacked.norms.push(+vertNormals[(vertex[1] - 1) * 3 + 1]);
+                  unpacked.norms.push(+vertNormals[(vertex[1] - 1) * 3 + 2]);
+                }
+                // Vertex normals when format 'f v//vn' or 'f v/vt/vn'
+                if (vertex.normals === 3) {
+                  unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
+                  unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
+                  unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
+                }
                 // add the newly created vertex to the list of indices
                 unpacked.hashindices[elements[j]] = unpacked.index;
                 unpacked.indices.push(unpacked.index);
