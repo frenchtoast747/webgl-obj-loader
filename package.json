@@ -2,9 +2,10 @@
   "name": "webgl-obj-loader",
   "version": "0.1.1",
   "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
-  "main": "webgl-obj-loader.js",
+  "main": "src/webgl-obj-loader.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,14 @@
   "bugs": {
     "url": "https://github.com/frenchtoast747/webgl-obj-loader/issues"
   },
-  "homepage": "https://github.com/frenchtoast747/webgl-obj-loader"
+  "homepage": "https://github.com/frenchtoast747/webgl-obj-loader",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "mocha": "^4.0.1",
+    "webpack": "^3.8.1"
+  }
 }
