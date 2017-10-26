@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>webgl-obj-loader dev</title>
+    <meta charset="UTF-8">
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec2 vTextureCoord;
+        varying vec3 vTransformedNormal;
+        varying vec4 vPosition;
+
+        void main(void) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+    </script>
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec3 aVertexNormal;
+        attribute vec2 aTextureCoord;
+
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+        uniform mat3 uNMatrix;
+
+        varying vec2 vTextureCoord;
+        varying vec3 vTransformedNormal;
+        varying vec4 vPosition;
+
+
+        void main(void) {
+            vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
+            gl_Position = uPMatrix * vPosition;
+            vTextureCoord = aTextureCoord;
+            vTransformedNormal = uNMatrix * aVertexNormal;
+        }
+    </script>
+    <script type="text/javascript" src="gl-matrix.js"></script>
+    <script type='text/javascript' src='../webgl-obj-loader.js'></script>
+    <script type='text/javascript' src='app.js'></script>
+</head>
+<body style='padding:0; margin:0;'>
+    <div style='margin:0 auto; width:500px;'>
+        <canvas id="mycanvas" style="border: none;" width="500" height="500"></canvas>
+    </div>
+</body>
+</html>
