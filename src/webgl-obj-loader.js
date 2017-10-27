@@ -1,10 +1,11 @@
 import { Mesh } from './mesh'
-import { Material } from './material'
+import { Material, MaterialParser } from './material'
 
 var OBJ = {};
 
 OBJ.Mesh = Mesh;
 OBJ.Material = Material;
+OBJ.MaterialParser = MaterialParser;
 
   function each(items, fn){
     for (var i = 0; i < items.length; i++){
