@@ -10,28 +10,46 @@ export class Material {
     this.diffuse = [0, 0, 0];
     // Ks
     this.specular = [0, 0, 0];
+    // Ke
+    this.emissive = [0, 0, 0];
+    // Tf
+    this.transmissionFilter = [0, 0, 0];
+    // d
+    this.dissolve = 0;
     // valid range is between 0 and 1000
-    this.specular_exponent = 0;
+    this.specularExponent = 0;
     // either d or Tr; valid values are normalized
     this.transparency = 0;
-    // the enum of the illumination model to use
+    // illum - the enum of the illumination model to use
     this.illumination = 0;
+    // Ni - Set to "normal" (air).
+    this.refractionIndex = 1;
+    // sharpness
+    this.sharpness = 0;
     // map_Kd
-    this.map_diffuse = {};
+    this.mapDiffuse = null;
     // map_Ka
-    this.map_ambient = {};
+    this.mapAmbient = null;
     // map_Ks
-    this.map_specular = {};
+    this.mapSpecular = null;
     // map_Ns
-    this.map_specular_component = {};
+    this.mapSpecularExponent = null;
     // map_d
-    this.map_alpha = {};
+    this.mapDissolve = null;
+    // map_aat
+    this.antiAliasing = false;
     // map_bump or bump
-    this.map_bump = {};
+    this.mapBump = null;
     // disp
-    this.map_displacement = {};
+    this.mapDisplacement = null;
     // decal
-    this.map_decal = {};
+    this.mapDecal = null;
+    // map_Ke
+    this.mapEmissive = null;
+    // refl - when the reflection type is a cube, there will be multiple refl
+    //        statements for each side of the cube. If it's a spherical
+    //        reflection, there should only ever be one.
+    this.mapReflections = [];
   }
 }
 
@@ -43,7 +61,7 @@ export class MaterialParser {
   constructor (mtlData) {
     this.data = mtlData;
     this.currentMaterial = null;
-    this.materials = [];
+    this.materials = {};
   }
 
   parse_newmtl(tokens) {
@@ -51,8 +69,43 @@ export class MaterialParser {
     console.info('Parsing new Material:', name);
 
     this.currentMaterial = new Material(name);
-    this.materials.push(this.currentMaterial);
+    this.materials[name] = this.currentMaterial;
   }
+
+  /**
+   * See the documenation for parse_Ka below for a better understanding.
+   *
+   * Given a list of possible color tokens, returns an array of R, G, and B
+   * color values.
+   */
+  parseColor(tokens) {
+    if (tokens[0] == 'spectral') {
+      console.error(
+        'The MTL parser does not support spectral curve files. You will ' +
+        'need to convert the MTL colors to either RGB or CIEXYZ.'
+      );
+      return
+    }
+
+    if (tokens[0] == 'xyz') {
+      console.warn('TODO: convert XYZ to RGB');
+      return
+    }
+
+    // from my understanding of the spec, RGB values at this point
+    // will either be 3 floats or exactly 1 float, so that's the check
+    // that i'm going to perform here
+    if (tokens.length == 3) {
+      return tokens.map(parseFloat);
+    }
+
+    // Since tokens at this point has a length of 3, we're going to assume
+    // it's exactly 1, skipping the check for 2.
+    let value = parseFloat(tokens[0]);
+    // in this case, all values are equivalent
+    return [value, value, value];
+  }
+
   /**
    * Parse the ambient reflectivity
    *
@@ -82,7 +135,7 @@ export class MaterialParser {
    * ambient reflectivity accordingly outside of that range.
    */
   parse_Ka(tokens) {
-
+    this.currentMaterial.ambient = this.parseColor(tokens);
   }
 
   /**
@@ -92,7 +145,7 @@ export class MaterialParser {
    * are the same
    */
   parse_Kd(tokens) {
-
+    this.currentMaterial.diffuse = this.parseColor(tokens);
   }
 
   /**
@@ -102,7 +155,7 @@ export class MaterialParser {
    * are the same
    */
   parse_Ks(tokens) {
-
+    this.currentMaterial.specular = this.parseColor(tokens);
   }
 
   /**
@@ -111,7 +164,7 @@ export class MaterialParser {
    * The amount and color of light emitted by the object.
    */
   parse_Ke(tokens) {
-
+    this.currentMaterial.emissive = this.parseColor(tokens);
   }
 
   /**
@@ -125,7 +178,7 @@ export class MaterialParser {
    * are the same
    */
   parse_Tf(tokens) {
-
+    this.currentMaterial.transmissionFilter = this.parseColor(tokens);
   }
 
   /**
@@ -155,7 +208,9 @@ export class MaterialParser {
    *    dissolve = 1.0 - (N*v)(1.0-factor)
    */
   parse_d(tokens) {
-
+    // this ignores the -halo option as I can't find any documentation on what
+    // it's supposed to be.
+    this.currentMaterial.dissolve = parseFloat(tokens.pop());
   }
 
   /**
@@ -180,7 +235,7 @@ export class MaterialParser {
    * Example: "illum 2" to specify the "Highlight on" model
    */
   parse_illum(tokens) {
-
+    this.currentMaterial.illumination = parseInt(tokens[0]);
   }
 
   /**
@@ -198,7 +253,7 @@ export class MaterialParser {
    * results and are not recommended
    */
   parse_Ni(tokens) {
-
+    this.currentMaterial.refractionIndex = parseInt(tokens[0]);
   }
 
   /**
@@ -213,7 +268,7 @@ export class MaterialParser {
    * tight, concentrated highlight. Ns Values normally range from 0 to 1000.
    */
   parse_Ns(tokens) {
-
+    this.currentMaterial.specularExponent = parseInt(tokens[0]);
   }
 
   /**
@@ -234,60 +289,192 @@ export class MaterialParser {
    * flat surfaces that are viewed at a sharp angle.
    */
   parse_sharpness(tokens) {
+    this.currentMaterial.sharpness = parseInt(tokens[0]);
+  }
 
+  parse_cc(values, options) {
+    options.colorCorrection = values[0] == 'on'
+  }
+
+  parse_blendu(values, options) {
+    options.horizontalBlending = values[0] == 'on';
+  }
+
+  parse_blendv(values, options) {
+    options.verticalBlending = values[0] == 'on';
+  }
+
+  parse_boost(values, options) {
+    options.boostMipMapSharpness = parseFloat(values[0]);
+  }
+
+  parse_mm(values, options) {
+    options.modifyTextureMap.brightness = parseFloat(values[0]);
+    options.modifyTextureMap.contrast = parseFloat(values[1]);
+  }
+
+  parse_ost(values, option, defaultValue) {
+    while (values.length < 3) {
+      values.push(defaultValue);
+    }
+
+    option.u = values[0];
+    option.v = values[1];
+    option.w = values[2];
+  }
+
+  parse_o(values, options) {
+    parse_ost(values, options.offset, 0);
+  }
+
+  parse_s(values, options) {
+    parse_ost(values, options.scale, 1);
+  }
+
+  parse_t(values, options) {
+    parse_ost(values, options.turbulence, 0);
+  }
+
+  parse_texres(values, options) {
+    options.textureResolution = parseFloat(values[0]);
+  }
+
+  parse_clamp(values, options) {
+    options.clamp = values[0] == 'on';
+  }
+
+  parse_bm(values, options) {
+    options.bumpMultiplier = parseFloat(values[0]);
+  }
+
+  parse_imfchan(values, options) {
+    options.imfChan = values[0];
+  }
+
+  /**
+   * This only exists for relection maps and denotes the type of reflection.
+   */
+  parse_type(values, options) {
+    options.reflectionType = values[0];
+  }
+
+  parseOptions(tokens) {
+    let options = {
+      colorCorrection: false,
+      horizontalBlending: true,
+      verticalBlending: true,
+      boostMipMapSharpness: 0,
+      modifyTextureMap: {
+        brightness: 0,
+        contrast: 1
+      },
+      offset: {u: 0, v: 0, w: 0},
+      scale: {u: 1, v: 1, w: 1},
+      turbulence: {u: 0, v: 0, w: 0},
+      clamp: false,
+      textureResolution: null,
+      bumpMultiplier: 1,
+      imfChan: null
+    }
+
+    let option, values;
+    let optionsToValues = {};
+
+    tokens.reverse();
+
+    while (tokens.length) {
+      const token = tokens.pop();
+
+      if (token.startsWith('-')) {
+        option = token.substr(1);
+        optionsToValues[option] = []
+      }
+      else {
+        optionsToValues[option].push(token)
+      }
+    }
+
+    for ([option, values] of Object.entries(optionsToValues)) {
+      let optionMethod = this[`parse_${option}`];
+      if (optionMethod) {
+        optionMethod.bind(this)(values, options);
+      }
+    }
+
+    return options;
+  }
+
+  parseMap(tokens) {
+    // according to wikipedia:
+    // (https://en.wikipedia.org/wiki/Wavefront_.obj_file#Vendor_specific_alterations)
+    // there is at least one vendor that places the filename before the options
+    // rather than after (which is to spec). All options start with a '-'
+    // so if the first token doesn't start with a '-', we're going to assume it's
+    // the name of the map file.
+    let filename, options;
+    if (!tokens[0].startsWith('-')) {
+      [filename, ...options] = tokens;
+    }
+    else {
+      filename = tokens.pop();
+      options = tokens;
+    }
+
+    options = this.parseOptions(options);
+    return {filename, options};
   }
 
   parse_map_Ka(tokens) {
-
+    this.currentMaterial.mapAmbient = this.parseMap(tokens);
   }
 
   parse_map_Kd(tokens) {
-
+    this.currentMaterial.mapDiffuse = this.parseMap(tokens);
   }
 
   parse_map_Ks(tokens) {
-
+    this.currentMaterial.mapSpecular = this.parseMap(tokens);
   }
 
   parse_map_Ke(tokens) {
-
+    this.currentMaterial.mapEmissive = this.parseMap(tokens);
   }
 
   parse_map_Ns(tokens) {
-
+    this.currentMaterial.mapSpecularExponent = this.parseMap(tokens);
   }
 
   parse_map_d(tokens) {
+    this.currentMaterial.mapDissolve = this.parseMap(tokens);
+  }
 
+  parse_map_aat(tokens) {
+    this.currentMaterial.antiAliasing = tokens[0] == 'on';
   }
 
   parse_map_bump(tokens) {
-
+    this.currentMaterial.mapBump = this.parseMap(tokens);
   }
 
   parse_bump(tokens) {
-
+    this.currentMaterial.mapBump = this.parseMap(tokens);
   }
 
   parse_disp(tokens) {
-
+    this.currentMaterial.mapDisplacement = this.parseMap(tokens);
   }
 
   parse_map_decal(tokens) {
-
+    this.currentMaterial.mapDecal = this.parseMap(tokens);
   }
 
   parse_refl(tokens) {
-
-  }
-
-  parse_options(line){
-
+    this.currentMaterial.mapReflections.push(this.parseMap(tokens));
   }
 
   parse(){
     let lines = this.data.split(/\r?\n/);
-    for(let line of lines){
+    for (let line of lines){
       line = line.trim();
       if (!line || line.startsWith('#')) {
         continue;
