@@ -66,7 +66,7 @@ export class MaterialParser {
 
   parse_newmtl(tokens) {
     let name = tokens[0];
-    console.info('Parsing new Material:', name);
+    //console.info('Parsing new Material:', name);
 
     this.currentMaterial = new Material(name);
     this.materials[name] = this.currentMaterial;
@@ -491,7 +491,7 @@ export class MaterialParser {
         continue;
       }
 
-      console.debug(`Parsing "${directive}" with tokens: ${tokens}`);
+      //console.log(`Parsing "${directive}" with tokens: ${tokens}`);
       parseMethod.bind(this)(tokens);
     }
   }
