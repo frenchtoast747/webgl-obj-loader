@@ -1,13 +1,4 @@
-(function (scope, undefined) {
-  'use strict';
-
   var OBJ = {};
-
-  if (typeof module !== 'undefined') {
-    module.exports = OBJ;
-  } else {
-    scope.OBJ = OBJ;
-  }
 
   function each(items, fn){
     for (var i = 0; i < items.length; i++){
@@ -665,4 +656,7 @@
     gl.deleteBuffer(mesh.vertexBuffer);
     gl.deleteBuffer(mesh.indexBuffer);
   }
-})(this);
+
+export {
+    OBJ,
+}

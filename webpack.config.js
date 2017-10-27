@@ -5,6 +5,7 @@ module.exports = {
     output: {
         path: __dirname + '/dist',
         publicPath: '/',
+        libraryTarget: 'umd',
         filename: 'webgl-obj-loader.js'
     },
     module: {
