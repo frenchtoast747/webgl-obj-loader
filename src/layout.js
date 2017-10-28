@@ -15,7 +15,7 @@
  * For example:
  * <pre><code>
  *
- * let index = glctx.getAttribLocation(shaderProgram, "pos");
+ * const index = glctx.getAttribLocation(shaderProgram, "pos");
  * glctx.vertexAttribPointer(
  *   layout.position.size,
  *   glctx[layout.position.type],
@@ -38,7 +38,7 @@ export class Layout {
     constructor(...attributes) {
         this.attributes = {};
         let offset = 0;
-        for (let attribute of attributes) {
+        for (const attribute of attributes) {
             if (this[attribute.key]) {
                 throw new DuplicateAttributeException(attribute);
             }
@@ -52,7 +52,7 @@ export class Layout {
             offset += attribute.sizeInBytes;
         }
         this.stride = offset;
-        for (let attribute of attributes) {
+        for (const attribute of attributes) {
             this[attribute.key].stride = this.stride;
         }
     }
