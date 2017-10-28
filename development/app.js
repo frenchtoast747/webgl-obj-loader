@@ -149,8 +149,8 @@ function setMatrixUniforms(){
     gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, app.mvMatrix);
 
     var normalMatrix = mat3.create();
-    mat4.toInverseMat3(app.mvMatrix, normalMatrix);
-    mat3.transpose(normalMatrix);
+    mat3.normalFromMat4(normalMatrix, app.mvMatrix);
+    mat3.transpose(normalMatrix, normalMatrix);
     gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
 }
 
@@ -176,10 +176,10 @@ function animate(){
 
 function drawScene(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.01, 1000.0, app.pMatrix);
+    mat4.perspective(app.pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.01, 1000.0);
     mat4.identity(app.mvMatrix);
     // move the camera
-    mat4.translate(app.mvMatrix, [0, 0, -5]);
+    mat4.translate(app.mvMatrix, app.mvMatrix, [0, 0, -5]);
     // set up the scene
     mvPushMatrix();
         drawObject(app.models.suzanne);
