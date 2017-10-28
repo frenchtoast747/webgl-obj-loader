@@ -6,7 +6,9 @@
   "scripts": {
     "build": "webpack",
     "watch": "npm build -- -w",
-    "test": "mocha --require babel-register"
+    "test": "mocha --require babel-register",
+    "coverage": "nyc npm test",
+    "coverage:report": "nyc report -r html"
   },
   "repository": {
     "type": "git",
@@ -40,6 +42,7 @@
     "eslint": "^4.10.0",
     "eslint-config-google": "^0.9.1",
     "mocha": "^4.0.1",
+    "nyc": "^11.2.1",
     "webpack": "^3.8.1"
   }
 }

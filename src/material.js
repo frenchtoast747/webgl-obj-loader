@@ -73,6 +73,8 @@ export class MaterialParser {
     this.data = mtlData;
     this.currentMaterial = null;
     this.materials = {};
+
+    this.parse();
   }
 
   /* eslint-disable camelcase */
@@ -293,7 +295,7 @@ export class MaterialParser {
    * @param {string[]} tokens the tokens associated with the directive
    */
   parse_Ni(tokens) {
-    this.currentMaterial.refractionIndex = parseInt(tokens[0]);
+    this.currentMaterial.refractionIndex = parseFloat(tokens[0]);
   }
 
   /**
@@ -344,7 +346,7 @@ export class MaterialParser {
    * @param {Object} options the Object of all image options
    */
   parse_cc(values, options) {
-    options.colorCorrection = values[0] == 'on'
+    options.colorCorrection = values[0] == 'on';
   }
 
   /**
@@ -400,9 +402,9 @@ export class MaterialParser {
       values.push(defaultValue);
     }
 
-    option.u = values[0];
-    option.v = values[1];
-    option.w = values[2];
+    option.u = parseFloat(values[0]);
+    option.v = parseFloat(values[1]);
+    option.w = parseFloat(values[2]);
   }
 
   /**
@@ -412,7 +414,7 @@ export class MaterialParser {
    * @param {Object} options the Object of all image options
    */
   parse_o(values, options) {
-    parse_ost(values, options.offset, 0);
+    this.parse_ost(values, options.offset, 0);
   }
 
   /**
@@ -422,7 +424,7 @@ export class MaterialParser {
    * @param {Object} options the Object of all image options
    */
   parse_s(values, options) {
-    parse_ost(values, options.scale, 1);
+    this.parse_ost(values, options.scale, 1);
   }
 
   /**
@@ -432,7 +434,7 @@ export class MaterialParser {
    * @param {Object} options the Object of all image options
    */
   parse_t(values, options) {
-    parse_ost(values, options.turbulence, 0);
+    this.parse_ost(values, options.turbulence, 0);
   }
 
   /**
@@ -560,7 +562,8 @@ export class MaterialParser {
     }
 
     options = this.parseOptions(options);
-    return {filename, options};
+    options['filename'] = filename;
+    return options;
   }
 
   /**

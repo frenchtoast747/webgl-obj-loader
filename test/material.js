@@ -1,17 +1,12 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 
-import { MaterialParser, Material } from '../src/material';
+import {MaterialParser} from '../src/material';
 
-function makeMP(data) {
-    let m = new MaterialParser(data);
-    m.parse();
-    return m;
-}
 
 describe('MaterialParser', function() {
   describe('#parse_newmtl()', function() {
     it('should update materials object to contain 3 materials', function() {
-        let m = makeMP(
+        let m = new MaterialParser(
             `
             newmtl material_1
             newmtl material_2
@@ -19,10 +14,14 @@ describe('MaterialParser', function() {
             `
         );
 
-        expect(m.materials).to.have.all.keys('material_1', 'material_2', 'material_3');
+        expect(m.materials).to.have.all
+        .keys('material_1', 'material_2', 'material_3');
     });
+  });
+
+  describe('#parseColor', function() {
     it('should parse RGB colors correctly', function() {
-        let m = makeMP(
+        let m = new MaterialParser(
             `
             newmtl my_material
             Ka 1.000000 1.000000 1.000000
@@ -40,6 +39,115 @@ describe('MaterialParser', function() {
         expect(material.specular).to.be.deep.equal([0.5, 0.5, 0.5]);
         expect(material.emissive).to.be.deep.equal([0, 0, 0]);
         expect(material.transmissionFilter).to.be.deep.equal([1, 1, 1]);
-    })
+    });
+  });
+
+  describe('#parse_d', function() {
+    it('should return the dissolve value as a number', function() {
+        let m = new MaterialParser(
+            `
+            newmtl my_material
+            d 0.5
+            `
+        );
+        let material = m.materials.my_material;
+
+        expect(material.dissolve).to.be.equal(0.5);
+    });
+  });
+
+  describe('#parse_illum', function() {
+    it('should return the illum value as a number', function() {
+        let m = new MaterialParser(
+            `
+            newmtl my_material
+            illum 2
+            `
+        );
+        let material = m.materials.my_material;
+
+        expect(material.illumination).to.be.equal(2);
+    });
+  });
+
+  describe('#parse_Ni', function() {
+    it('should return the refraction index value as a number', function() {
+        let m = new MaterialParser(
+            `
+            newmtl my_material
+            Ni 2.5
+            `
+        );
+        let material = m.materials.my_material;
+
+        expect(material.refractionIndex).to.be.equal(2.5);
+    });
+  });
+
+  describe('#parse_Ns', function() {
+    it('should return the specular exponent value as a number', function() {
+        let m = new MaterialParser(
+            `
+            newmtl my_material
+            Ns 250
+            `
+        );
+        let material = m.materials.my_material;
+
+        expect(material.specularExponent).to.be.equal(250);
+    });
+  });
+
+  describe('#parse_sharpness', function() {
+    it('should return the sharpess value as a number', function() {
+        let m = new MaterialParser(
+            `
+            newmtl my_material
+            sharpness 100
+            `
+        );
+        let material = m.materials.my_material;
+
+        expect(material.sharpness).to.be.equal(100);
+    });
+  });
+
+  describe('#parseMap', function() {
+    it('should parse the filename and options associated with the directives',
+        function() {
+            let m = new MaterialParser(
+                `
+                newmtl my_material
+                map_Ka -cc on -blendu off -blendv off filename.jpg
+                map_Kd -boost 123 -mm 1 2 filename.jpg
+                map_Ks -o 1 other.jpg
+                map_Ke -s 2 3 too.jpg
+                map_Ns -t 4 5 6 lol.jpg
+                refl -bm 42 -imfchan r texture.jpg
+                `
+            );
+            let material = m.materials.my_material;
+
+            expect(material.mapAmbient.colorCorrection).to.be.true;
+            expect(material.mapAmbient.horizontalBlending).to.be.false;
+            expect(material.mapAmbient.verticalBlending).to.be.false;
+            expect(material.mapAmbient.filename).to.be.equal('filename.jpg');
+            expect(material.mapDiffuse.boostMipMapSharpness)
+                .to.be.equal(123);
+            expect(material.mapDiffuse.modifyTextureMap.brightness)
+                .to.be.equal(1);
+            expect(material.mapDiffuse.modifyTextureMap.contrast)
+                .to.be.equal(2);
+            expect(material.mapSpecular.offset)
+                .to.be.deep.equal({u: 1, v: 0, w: 0});
+            expect(material.mapEmissive.scale)
+                .to.be.deep.equal({u: 2, v: 3, w: 1});
+            expect(material.mapSpecularExponent.turbulence)
+                .to.be.deep.equal({u: 4, v: 5, w: 6});
+            expect(material.mapReflections[0].bumpMultiplier)
+                .to.be.equal(42);
+            expect(material.mapReflections[0].imfChan)
+                .to.be.equal('r');
+        });
   });
 });
