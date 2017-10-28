@@ -138,7 +138,7 @@ function mvPushMatrix(){
 }
 
 function mvPopMatrix(){
-    if (app.mvMatrixStack.length == 0){
+    if (app.mvMatrixStack.length === 0){
         throw "Invalid popMatrix!";
     }
     app.mvMatrix = app.mvMatrixStack.pop();
@@ -168,7 +168,7 @@ function initBuffers(){
 function animate(){
     app.timeNow = new Date().getTime();
     app.elapsed = app.timeNow - app.lastTime;
-    if (app.lastTime != 0){
+    if (app.lastTime !== 0){
         // do animations
     }
     app.lastTime = app.timeNow;
