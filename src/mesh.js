@@ -1,3 +1,5 @@
+import {Layout} from "./layout"
+
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data
  * and collect the vertex, vertex normal, texture, and face information. This
@@ -232,5 +234,39 @@ export class Mesh {
         self.vertexNormals = unpacked.norms;
         self.textures = unpacked.textures;
         self.indices = unpacked.indices;
+    }
+
+    /**
+     * @param {Layout} layout - A {@link Layout} object that describes the
+     * desired memory layout of the generated buffer
+     * @return {ArrayBuffer} The packed array in the ... TODO
+     */
+    makeBufferData(layout) {
+        const buffer = new ArrayBuffer(layout.stride * this.vertices.length/3);
+        const dataView = new DataView(buffer);
+        for (let i = 0, offset = 0; i < this.vertices.length/3; i++) {
+            // copy in the vertex data in the order and format given by the
+            // layout param
+            for (const attribute of layout.attributes) {
+                switch (attribute.key) {
+                    case Layout.POSITION.key:
+                        dataView.setFloat32(offset, this.vertices[i * 3]);
+                        dataView.setFloat32(offset + 4, this.vertices[(i + 1) * 3]);
+                        dataView.setFloat32(offset + 8, this.vertices[(i + 2) * 3]);
+                        break;
+                    case Layout.UV.key:
+                        dataView.setFloat32(offset, this.textures[i * 2]);
+                        dataView.setFloat32(offset + 4, this.vertices[(i + 1) * 2]);
+                        break;
+                    case Layout.NORMAL.key:
+                        dataView.setFloat32(offset, this.vertexNormals[i * 3]);
+                        dataView.setFloat32(offset + 4, this.vertexNormals[(i + 1) * 3]);
+                        dataView.setFloat32(offset + 8, this.vertexNormals[(i + 2) * 3]);
+                        break;
+                }
+                offset += attribute.sizeInBytes;
+            }
+        }
+        return buffer;
     }
 }

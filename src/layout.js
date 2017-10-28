@@ -36,7 +36,7 @@ export class Layout {
      * @see {@link Mesh}
      */
     constructor(...attributes) {
-        this.attributes = {};
+        this.attributes = attributes;
         let offset = 0;
         for (const attribute of attributes) {
             if (this[attribute.key]) {
