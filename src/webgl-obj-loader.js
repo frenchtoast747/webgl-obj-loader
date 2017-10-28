@@ -1,5 +1,6 @@
 import { Mesh } from './mesh'
 import { Material, MaterialParser } from './material'
+import {Layout} from './layout'
 
 if (!Object.entries)
 Object.entries = function( obj ){
@@ -12,11 +13,15 @@ Object.entries = function( obj ){
   return resArray;
 };
 
-var OBJ = {};
+/**
+ * @namespace
+ */
+export let OBJ = {};
 
 OBJ.Mesh = Mesh;
 OBJ.Material = Material;
 OBJ.MaterialParser = MaterialParser;
+OBJ.Layout = Layout;
 
   function each(items, fn){
     for (var i = 0; i < items.length; i++){
@@ -228,7 +233,3 @@ OBJ.MaterialParser = MaterialParser;
     gl.deleteBuffer(mesh.vertexBuffer);
     gl.deleteBuffer(mesh.indexBuffer);
   }
-
-export {
-    OBJ,
-}
