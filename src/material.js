@@ -488,7 +488,7 @@ export class MaterialParser {
   }
 
   /**
-   * Parses the -blendu flag and updates the options object with the values.
+   * Parses the texture's options and returns an options object with the info
    *
    * @param {string[]} tokens all of the option tokens to pass to the texture
    * @return {Object} a complete object of objects to apply to the texture
@@ -644,7 +644,7 @@ export class MaterialParser {
    * @param {string[]} tokens list of tokens for the bump direcive
    */
   parse_bump(tokens) {
-    this.currentMaterial.mapBump = this.parseMap(tokens);
+    this.parse_map_bump(tokens);
   }
 
   /**
@@ -661,7 +661,7 @@ export class MaterialParser {
    *
    * @param {string[]} tokens list of tokens for the map_decal direcive
    */
-  parse_map_decal(tokens) {
+  parse_decal(tokens) {
     this.currentMaterial.mapDecal = this.parseMap(tokens);
   }
 

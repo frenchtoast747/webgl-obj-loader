@@ -29,6 +29,9 @@ describe('MaterialParser', function() {
             Ks 0.500000 0.500000 0.500000
             Ke 0.000000 0.000000 0.000000
             Tf 1.0000 1.0000 1.0000
+
+            newmtl material2
+            Ka 1.1
             `
         );
 
@@ -39,6 +42,8 @@ describe('MaterialParser', function() {
         expect(material.specular).to.be.deep.equal([0.5, 0.5, 0.5]);
         expect(material.emissive).to.be.deep.equal([0, 0, 0]);
         expect(material.transmissionFilter).to.be.deep.equal([1, 1, 1]);
+
+        expect(m.materials.material2.ambient).to.be.deep.equal([1.1, 1.1, 1.1]);
     });
   });
 
@@ -123,7 +128,14 @@ describe('MaterialParser', function() {
                 map_Ks -o 1 other.jpg
                 map_Ke -s 2 3 too.jpg
                 map_Ns -t 4 5 6 lol.jpg
-                refl -bm 42 -imfchan r texture.jpg
+                refl -bm 42 -imfchan r -type sphere texture.jpg
+                map_d -clamp on filename.jpg
+                map_aat on
+                # throwing in both so both functions get coverage
+                map_bump -texres 1024 file.jpg
+                bump -texres 1024 file.jpg
+                disp filename.jpg -cc on
+                decal file.jpg
                 `
             );
             let material = m.materials.my_material;
@@ -148,6 +160,14 @@ describe('MaterialParser', function() {
                 .to.be.equal(42);
             expect(material.mapReflections[0].imfChan)
                 .to.be.equal('r');
+            expect(material.mapReflections[0].reflectionType)
+                .to.be.equal('sphere');
+            expect(material.antiAliasing).to.be.true;
+            expect(material.mapBump.textureResolution).to.be.equal(1024);
+            expect(material.mapDisplacement.filename)
+                .to.be.equal('filename.jpg');
+            expect(material.mapDisplacement.colorCorrection).to.be.true;
+            expect(material.mapDecal.filename).to.be.equal('file.jpg');
         });
   });
 });
