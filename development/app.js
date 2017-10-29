@@ -110,6 +110,13 @@ function initShaders(){
         console.warn('aTextureCoord not found in shader. Is it unused?');
     }
 
+    shaderProgram.materialIndexAttribute = gl.getAttribLocation(shaderProgram, "aMaterialIndex");
+    if (shaderProgram.materialIndexAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.materialIndexAttribute);
+    } else {
+        console.warn('aMaterialIndex not found in shader. Is it unused?');
+    }
+
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
@@ -132,6 +139,11 @@ function initShaders(){
             } else{
                 gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
             }
+        }
+
+        if (shaderProgram.materialIndexAttribute != -1) {
+            var attr = layout.materialIndex;
+            gl.vertexAttribPointer(shaderProgram.materialIndexAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
         }
     }
 }
@@ -178,7 +190,7 @@ function initBuffers(){
     var layout = new OBJ.Layout(
         OBJ.Layout.POSITION,
         OBJ.Layout.NORMAL,
-        OBJ.Layout.UV);
+        OBJ.Layout.MATERIAL_INDEX);
 
     // initialize the mesh's buffers
     for (var mesh in app.meshes){
