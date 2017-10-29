@@ -186,6 +186,10 @@ function initBuffers(){
 function animate(){
     app.timeNow = new Date().getTime();
     app.elapsed = app.timeNow - app.lastTime;
+    if (!app.time) {
+        app.time = 0.0;
+    }
+    app.time += app.elapsed / 1000.0;
     if (app.lastTime !== 0){
         // do animations
     }
@@ -198,6 +202,7 @@ function drawScene(){
     mat4.identity(app.mvMatrix);
     // move the camera
     mat4.translate(app.mvMatrix, app.mvMatrix, [0, 0, -5]);
+    mat4.rotate(app.mvMatrix, app.mvMatrix, app.time * 0.25 * Math.PI, [0, 1, 0]);
     // set up the scene
     mvPushMatrix();
         drawObject(app.models.suzanne);
