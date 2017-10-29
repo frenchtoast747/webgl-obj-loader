@@ -90,13 +90,22 @@ function initShaders(){
     gl.useProgram(shaderProgram);
 
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    if (shaderProgram.vertexPositionAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+        console.warn('aVertexPosition not found in shader. Is it unused?');
+    }
 
     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    if (shaderProgram.vertexNormalAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+        console.warn('aVertexNormal not found in shader. Is it unused?');
+    }
 
     shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+    if (shaderProgram.textureCoordAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+        console.warn('aTextureCoord not found in shader. Is it unused?');
+    }
 
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
@@ -111,19 +120,25 @@ function drawObject(model){
      */
 //    gl.useProgram(shaderProgram);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.vertexBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, model.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.normalBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, model.mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    if (model.mesh.textures.length){
-        gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-        gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.textureBuffer);
-        gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, model.mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    if (shaderProgram.vertexPositionAttribute != -1) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.vertexBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, model.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
     }
-    else{
-        gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+    if (shaderProgram.vertexNormalAttribute != -1) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.normalBuffer);
+        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, model.mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    }
+
+    if (shaderProgram.textureCoordAttribute != -1) {
+        if (model.mesh.textures.length){
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.textureBuffer);
+            gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, model.mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
+        else{
+            gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
+        }
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
@@ -133,7 +148,7 @@ function drawObject(model){
 
 function mvPushMatrix(){
     var copy = mat4.create();
-    mat4.set(app.mvMatrix, copy);
+    mat4.copy(copy, app.mvMatrix);
     app.mvMatrixStack.push(copy);
 }
 
@@ -176,7 +191,7 @@ function animate(){
 
 function drawScene(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(app.pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.01, 1000.0);
+    mat4.perspective(app.pMatrix, 45 * Math.PI / 180.0, gl.viewportWidth / gl.viewportHeight, 0.01, 1000.0);
     mat4.identity(app.mvMatrix);
     // move the camera
     mat4.translate(app.mvMatrix, app.mvMatrix, [0, 0, -5]);
