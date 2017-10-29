@@ -243,25 +243,26 @@ export class Mesh {
      */
     makeBufferData(layout) {
         const buffer = new ArrayBuffer(layout.stride * this.vertices.length/3);
+        buffer.numItems = this.vertices.length / 3;
         const dataView = new DataView(buffer);
-        for (let i = 0, offset = 0; i < this.vertices.length/3; i++) {
+        for (let i = 0, offset = 0; i < buffer.numItems; i++) {
             // copy in the vertex data in the order and format given by the
             // layout param
             for (const attribute of layout.attributes) {
                 switch (attribute.key) {
                     case Layout.POSITION.key:
-                        dataView.setFloat32(offset, this.vertices[i * 3]);
-                        dataView.setFloat32(offset + 4, this.vertices[(i + 1) * 3]);
-                        dataView.setFloat32(offset + 8, this.vertices[(i + 2) * 3]);
+                        dataView.setFloat32(offset, this.vertices[i * 3], true);
+                        dataView.setFloat32(offset + 4, this.vertices[i * 3 + 1], true);
+                        dataView.setFloat32(offset + 8, this.vertices[i * 3 + 2], true);
                         break;
                     case Layout.UV.key:
-                        dataView.setFloat32(offset, this.textures[i * 2]);
-                        dataView.setFloat32(offset + 4, this.vertices[(i + 1) * 2]);
+                        dataView.setFloat32(offset, this.textures[i * 2], true);
+                        dataView.setFloat32(offset + 4, this.vertices[i * 2 + 1], true);
                         break;
                     case Layout.NORMAL.key:
-                        dataView.setFloat32(offset, this.vertexNormals[i * 3]);
-                        dataView.setFloat32(offset + 4, this.vertexNormals[(i + 1) * 3]);
-                        dataView.setFloat32(offset + 8, this.vertexNormals[(i + 2) * 3]);
+                        dataView.setFloat32(offset, this.vertexNormals[i * 3], true);
+                        dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);
+                        dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);
                         break;
                 }
                 offset += attribute.sizeInBytes;
