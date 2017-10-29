@@ -270,4 +270,10 @@ export class Mesh {
         }
         return buffer;
     }
+
+    makeIndexBufferData() {
+        const buffer = new Uint16Array(this.indices);
+        buffer.numItems = this.indices.length;
+        return buffer;
+    }
 }
