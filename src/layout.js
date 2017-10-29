@@ -38,9 +38,17 @@ export class Layout {
     constructor(...attributes) {
         this.attributes = attributes;
         let offset = 0;
+        let maxStrideMultiple = 0;
         for (const attribute of attributes) {
             if (this[attribute.key]) {
                 throw new DuplicateAttributeException(attribute);
+            }
+            // Add padding to satisfy WebGL's requirement that all
+            // vertexAttribPointer calls have an offset that is a multiple of
+            // the type size.
+            if (offset % attribute.sizeOfType !== 0) {
+                offset += attribute.sizeOfType - offset % attribute.sizeOfType;
+                console.warn('Layout requires padding before ' + attribute.key + ' attribute');
             }
             this[attribute.key] = {
                 'attribute': attribute,
@@ -50,6 +58,18 @@ export class Layout {
                 'offset': offset,
             };
             offset += attribute.sizeInBytes;
+            maxStrideMultiple = Math.max(
+                maxStrideMultiple,
+                attribute.sizeOfType);
+        }
+        // Add padding to the end to satisfy WebGL's requirement that all
+        // vertexAttribPointer calls have a stride that is a multiple of the
+        // type size. Because we're putting differently sized attributes into
+        // the same buffer, it must be padded to a multiple of the largest
+        // type size.
+        if (offset % maxStrideMultiple !== 0) {
+            offset += maxStrideMultiple - offset % maxStrideMultiple;
+            console.warn('Layout requires padding at the back');
         }
         this.stride = offset;
         for (const attribute of attributes) {
@@ -109,7 +129,8 @@ class Attribute {
         this.size = size;
         this.type = type;
         this.normalized = false;
-        this.sizeInBytes = sizeInBytesOfType(type) * size;
+        this.sizeOfType = sizeInBytesOfType(type);
+        this.sizeInBytes = this.sizeOfType * size;
     }
 }
 
@@ -209,7 +230,7 @@ Layout.UV = new Attribute('uv', 2, 'FLOAT');
  *
  * @see {@link Layout}
  */
-Layout.MATERIAL_INDEX = new Attribute('materialIndex', 1, 'UNSIGNED_SHORT');
+Layout.MATERIAL_INDEX = new Attribute('materialIndex', 1, 'SHORT');
 Layout.MATERIAL_ENABLED = new Attribute('materialEnabled', 1, 'UNSIGNED_SHORT');
 Layout.AMBIENT = new Attribute('ambient', 3, 'FLOAT');
 Layout.DIFFUSE = new Attribute('diffuse', 3, 'FLOAT');

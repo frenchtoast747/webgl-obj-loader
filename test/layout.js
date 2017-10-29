@@ -28,11 +28,11 @@ describe('Layout', function() {
             Layout.UV,
             Layout.MATERIAL_INDEX);
         expect(layout).to.have.a.property('position')
-            .that.has.a.property('stride').that.equals(22);
+            .that.has.a.property('stride').that.equals(24);
         expect(layout).to.have.a.property('uv')
-            .that.has.a.property('stride').that.equals(22);
+            .that.has.a.property('stride').that.equals(24);
         expect(layout).to.have.a.property('materialIndex')
-            .that.has.a.property('stride').that.equals(22);
+            .that.has.a.property('stride').that.equals(24);
     });
     it('should throw when it detects duplicates', function() {
         expect(() => new Layout(Layout.UV, Layout.UV)).to.throw();

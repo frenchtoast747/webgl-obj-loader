@@ -109,14 +109,17 @@ export class Mesh {
         const vertNormals = [];
         const textures = [];
         const unpacked = {};
+        const materialNamesByIndex = [];
+        const materialIndicesByName = {};
         // keep track of what material we've seen last
-        let currentMaterial;
+        let currentMaterialIndex = -1;
         // unpacking stuff
         unpacked.verts = [];
         unpacked.norms = [];
         unpacked.textures = [];
         unpacked.hashindices = {};
         unpacked.indices = [];
+        unpacked.materialIndices = [];
         unpacked.index = 0;
 
         const VERTEX_RE = /^v\s/;
@@ -144,8 +147,17 @@ export class Mesh {
                 // if this is a texture
                 textures.push(...elements);
             } else if (USE_MATERIAL_RE.test(line)) {
-                // keep track of the current material
-                currentMaterial = elements[0];
+                const materialName = elements[0];
+
+                // check to see if we've ever seen it before
+                if (!(materialName in materialIndicesByName)) {
+                    // new material we've never seen
+                    materialNamesByIndex.push(materialName);
+                    materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
+                }
+
+                // keep track of the current material index
+                currentMaterialIndex = materialIndicesByName[materialName];
             } else if (FACE_RE.test(line)) {
                 // if this is a face
                 /*
@@ -167,8 +179,10 @@ export class Mesh {
                         j = 2;
                         quad = true;
                     }
-                    if (elements[j] in unpacked.hashindices) {
-                        unpacked.indices.push(unpacked.hashindices[elements[j]]);
+                    const hash0 = elements[0] + ',' + currentMaterialIndex;
+                    const hash = elements[j] + ',' + currentMaterialIndex;
+                    if (hash in unpacked.hashindices) {
+                        unpacked.indices.push(unpacked.hashindices[hash]);
                     } else {
                         /*
                         Each element of the face line array is a Vertex which has its
@@ -217,15 +231,17 @@ export class Mesh {
                         unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
                         unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
                         unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
+                        // Vertex material indices
+                        unpacked.materialIndices.push(currentMaterialIndex);
                         // add the newly created Vertex to the list of indices
-                        unpacked.hashindices[elements[j]] = unpacked.index;
+                        unpacked.hashindices[hash] = unpacked.index;
                         unpacked.indices.push(unpacked.index);
                         // increment the counter
                         unpacked.index += 1;
                     }
                     if (j === 3 && quad) {
                         // add v0/t0/vn0 onto the second triangle
-                        unpacked.indices.push(unpacked.hashindices[elements[0]]);
+                        unpacked.indices.push(unpacked.hashindices[hash0]);
                     }
                 }
             }
@@ -233,7 +249,11 @@ export class Mesh {
         self.vertices = unpacked.verts;
         self.vertexNormals = unpacked.norms;
         self.textures = unpacked.textures;
+        self.vertexMaterialIndices = unpacked.materialIndices;
         self.indices = unpacked.indices;
+
+        self.materialNames = materialNamesByIndex;
+        self.materialIndices = materialIndicesByName;
     }
 
     /**
@@ -242,13 +262,16 @@ export class Mesh {
      * @return {ArrayBuffer} The packed array in the ... TODO
      */
     makeBufferData(layout) {
-        const buffer = new ArrayBuffer(layout.stride * this.vertices.length/3);
-        buffer.numItems = this.vertices.length / 3;
+        const numItems = this.vertices.length / 3;
+        const buffer = new ArrayBuffer(layout.stride * numItems);
+        buffer.numItems = numItems;
         const dataView = new DataView(buffer);
-        for (let i = 0, offset = 0; i < buffer.numItems; i++) {
+        for (let i = 0, vertexOffset = 0; i < numItems; i++) {
+            vertexOffset = i * layout.stride;
             // copy in the vertex data in the order and format given by the
             // layout param
             for (const attribute of layout.attributes) {
+                const offset = vertexOffset + layout[attribute.key].offset;
                 switch (attribute.key) {
                     case Layout.POSITION.key:
                         dataView.setFloat32(offset, this.vertices[i * 3], true);
@@ -264,8 +287,10 @@ export class Mesh {
                         dataView.setFloat32(offset + 4, this.vertexNormals[i * 3 + 1], true);
                         dataView.setFloat32(offset + 8, this.vertexNormals[i * 3 + 2], true);
                         break;
+                    case Layout.MATERIAL_INDEX.key:
+                        dataView.setInt16(offset, this.vertexMaterialIndices[i], true);
+                        break;
                 }
-                offset += attribute.sizeInBytes;
             }
         }
         return buffer;
