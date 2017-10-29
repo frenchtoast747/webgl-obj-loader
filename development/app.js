@@ -92,18 +92,21 @@ function initShaders(){
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
     if (shaderProgram.vertexPositionAttribute != -1) {
         gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    } else {
         console.warn('aVertexPosition not found in shader. Is it unused?');
     }
 
     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     if (shaderProgram.vertexNormalAttribute != -1) {
         gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+    } else {
         console.warn('aVertexNormal not found in shader. Is it unused?');
     }
 
     shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
     if (shaderProgram.textureCoordAttribute != -1) {
         gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+    } else {
         console.warn('aTextureCoord not found in shader. Is it unused?');
     }
 
