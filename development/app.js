@@ -113,6 +113,27 @@ function initShaders(){
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
+
+    shaderProgram.applyAttributePointers = function(layout) {
+        if (shaderProgram.vertexPositionAttribute != -1) {
+            var attr = layout.position;
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        }
+
+        if (shaderProgram.vertexNormalAttribute != -1) {
+            var attr = layout.normal;
+            gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        }
+
+        if (shaderProgram.textureCoordAttribute != -1) {
+            if (model.mesh.textures.length){
+                var attr = layout.uv;
+                gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+            } else{
+                gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
+            }
+        }
+    }
 }
 
 function drawObject(model){
@@ -123,26 +144,8 @@ function drawObject(model){
      */
 //    gl.useProgram(shaderProgram);
 
-    if (shaderProgram.vertexPositionAttribute != -1) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.vertexBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, model.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    }
-
-    if (shaderProgram.vertexNormalAttribute != -1) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.normalBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, model.mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    }
-
-    if (shaderProgram.textureCoordAttribute != -1) {
-        if (model.mesh.textures.length){
-            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-            gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.textureBuffer);
-            gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, model.mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
-        }
-        else{
-            gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
-        }
-    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.vertexBuffer);
+    shaderProgram.applyAttributePointers(model.mesh.vertexBuffer.layout);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
     setMatrixUniforms();
@@ -168,14 +171,34 @@ function setMatrixUniforms(){
 
     var normalMatrix = mat3.create();
     mat3.normalFromMat4(normalMatrix, app.mvMatrix);
-    mat3.transpose(normalMatrix, normalMatrix);
     gl.uniformMatrix3fv(shaderProgram.nMatrixUniform, false, normalMatrix);
 }
 
 function initBuffers(){
+    var layout = new OBJ.Layout(
+        OBJ.Layout.POSITION,
+        OBJ.Layout.NORMAL,
+        OBJ.Layout.UV);
+
     // initialize the mesh's buffers
     for (var mesh in app.meshes){
-        OBJ.initMeshBuffers(gl, app.meshes[mesh]);
+        // Create the vertex buffer for this mesh
+        var vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        var vertexData = app.meshes[mesh].makeBufferData(layout)
+        gl.bufferData(gl.ARRAY_BUFFER, vertexData, gl.STATIC_DRAW);
+        vertexBuffer.numItems = vertexData.numItems;
+        vertexBuffer.layout = layout;
+        app.meshes[mesh].vertexBuffer = vertexBuffer;
+
+        // Create the index buffer for this mesh
+        var indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        var indexData = app.meshes[mesh].makeIndexBufferData()
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
+        indexBuffer.numItems = indexData.numItems;
+        app.meshes[mesh].indexBuffer = indexBuffer;
+
         // this loops through the mesh names and creates new
         // model objects and setting their mesh to the current mesh
         app.models[mesh] = {};
