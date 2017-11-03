@@ -1,5 +1,5 @@
 import { Mesh } from './mesh'
-import { Material, MaterialParser } from './material'
+import { Material, MaterialLibrary } from './material'
 import {Layout} from './layout'
 
 if (!Object.entries)
@@ -20,7 +20,7 @@ export let OBJ = {};
 
 OBJ.Mesh = Mesh;
 OBJ.Material = Material;
-OBJ.MaterialParser = MaterialParser;
+OBJ.MaterialLibrary = MaterialLibrary;
 OBJ.Layout = Layout;
 
   function each(items, fn){
@@ -58,6 +58,83 @@ OBJ.Layout = Layout;
       callback(data);
     });
   }
+
+  /**
+   * Accepts a list of model objects and returns a Promise that
+   * resolves when all models have been downloaded and parsed.
+   * 
+   * The list of model objects follow this interface:
+   * {
+   *  obj: 'path/to/model.obj',
+   *  mtl: true | 'path/to/model.mtl',
+   *  name: 'suzanne'
+   * }
+   * 
+   * The `obj` attribute is required and should be the path to the
+   * model's .obj file relative to the current repo (absolute URLs are
+   * suggested).
+   * 
+   * The `mtl` attribute is optional and can either be a boolean or
+   * a path to the model's .mtl file relative to the current URL. If
+   * the value is `true`, then the path and basename given for the `obj`
+   * attribute is used replacing the .obj suffix for .mtl 
+   * E.g.: {obj: 'models/foo.obj', mtl: true} would search for 'models/foo.mtl'
+   * 
+   * The `name` attribute is optional and is a human friendly name to be
+   * included with the parsed OBJ and MTL files.
+   * 
+   * @returns {Promise} the result is a promise whose resolved value is an array
+   * of arrays (it contains an array for each model passed in).
+   * 
+   * Each inner array contains 2 or more items where the first item is always
+   * the given name (or the empty string) and the second item is the Mesh object
+   * from the parsed OBJ.
+   */
+  OBJ.downloadModels = function (models) {
+    const finished = [];
+
+    for (const model of models) {
+      const parsed = [];
+
+      if (!model.obj) {
+        throw new Error(
+          '"obj" attribute of model object not set. The .obj file is required to be set ' +
+          'in order to use downloadModels()'
+        );
+      }
+
+      parsed.push(Promise.resolve(model.name || ''))
+
+      parsed.push(
+        fetch(model.obj)
+          .then((response) => response.text())
+          .then((data) => {
+            return new OBJ.Mesh(data);
+          })
+      );
+
+      // Download MaterialLibrary file?
+      if (model.mtl) {
+        let mtl = model.mtl;
+        if (typeof mtl === 'boolean') {
+          mtl = model.obj.replace(/\.obj$/, '.mtl');
+        }
+
+        parsed.push(
+          fetch(mtl)
+            .then((response) => response.text())
+            .then((data) => {
+              return new OBJ.MaterialLibrary(data);
+            })
+        );
+      }
+
+      finished.push(Promise.all(parsed));
+    }
+
+    return Promise.all(finished);
+  }
+
 
   /**
    * Takes in an object of `mesh_name`, `'/url/to/OBJ/file'` pairs and a callback

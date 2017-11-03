@@ -264,7 +264,28 @@ function webGLStart(meshes){
 }
 
 window.onload = function (){
-    OBJ.downloadMeshes({
-        'suzanne': '/development/models/suzanne.obj'
-    }, webGLStart);
+    // OBJ.downloadMeshes({
+    //     'suzanne': '/development/models/suzanne.obj'
+    // }, webGLStart);
+    let p = OBJ.downloadModels([
+        {
+            name: 'die',
+            obj: '/development/models/die.obj',
+            mtl: '/development/models/die.mtl'
+        },
+        {
+            name: 'suzanne',
+            obj: '/development/models/suzanne.obj',
+            mtl: true
+        },
+    ]);
+
+    p.then((models) => {
+        for (const model of models) {
+            const [name, mesh, mtl] = model;
+            console.log('Name:', name);
+            console.log('Mesh:', mesh);
+            console.log('MTL:', mtl);
+        }
+    })
 }

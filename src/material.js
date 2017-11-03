@@ -64,7 +64,7 @@ export class Material {
  * https://en.wikipedia.org/wiki/Wavefront_.obj_file
  * http://paulbourke.net/dataformats/mtl/
  */
-export class MaterialParser {
+export class MaterialLibrary {
   /**
    * Constructs the Material Parser
    * @param {String} mtlData the MTL file contents
@@ -78,6 +78,9 @@ export class MaterialParser {
   }
 
   /* eslint-disable camelcase */
+  /* the function names here disobey camelCase conventions
+     to make parsing/routing easier. see the parse function
+     documentation for more information. */
 
   /**
    * Creates a new Material object and adds to the registry.
@@ -675,7 +678,17 @@ export class MaterialParser {
   }
 
   /**
-   * Parses the given data expeted to be an MTL file.
+   * Parses the MTL file.
+   * 
+   * Iterates line by line parsing each MTL directive.
+   * 
+   * This function expects the first token in the line
+   * to be a valid MTL directive. That token is then used
+   * to try and run a method on this class. parse_[directive]
+   * E.g., the `newmtl` directive would try to call the method
+   * parse_newmtl. Each parsing function takes in the remaining
+   * list of tokens and updates the currentMaterial class with
+   * the attributes provided.
    */
   parse() {
     let lines = this.data.split(/\r?\n/);
@@ -699,6 +712,10 @@ export class MaterialParser {
       // console.log(`Parsing "${directive}" with tokens: ${tokens}`);
       parseMethod.bind(this)(tokens);
     }
+
+    // some cleanup. These don't need to be exposed as public data.
+    delete this.data;
+    this.currentMaterial = null;
   }
 
   /* eslint-enable camelcase*/
