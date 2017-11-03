@@ -274,18 +274,18 @@ window.onload = function (){
             mtl: '/development/models/die.mtl'
         },
         {
-            name: 'suzanne',
             obj: '/development/models/suzanne.obj',
             mtl: true
         },
+        {
+            obj: '/development/models/suzanne.obj'
+        }
     ]);
 
     p.then((models) => {
-        for (const model of models) {
-            const [name, mesh, mtl] = model;
+        for ([name, mesh] of Object.entries(models)) {
             console.log('Name:', name);
             console.log('Mesh:', mesh);
-            console.log('MTL:', mtl);
         }
-    })
+    });
 }

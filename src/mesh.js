@@ -105,6 +105,8 @@ export class Mesh {
         exists in the hashindices object, its corresponding value is the index of
         that group and is appended to the unpacked indices array.
        */
+        this.name = '';
+        this.mtl = null;
         const verts = [];
         const vertNormals = [];
         const textures = [];
@@ -300,5 +302,9 @@ export class Mesh {
         const buffer = new Uint16Array(this.indices);
         buffer.numItems = this.indices.length;
         return buffer;
+    }
+
+    addMaterialLibrary (mtl) {
+        this.mtl = mtl;
     }
 }
