@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 
-import {MaterialParser} from '../src/material';
+import {MaterialLibrary} from '../src/material';
 
 
-describe('MaterialParser', function() {
+describe('MaterialLibrary', function() {
   describe('#parse_newmtl()', function() {
     it('should update materials object to contain 3 materials', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl material_1
             newmtl material_2
@@ -21,7 +21,7 @@ describe('MaterialParser', function() {
 
   describe('#parseColor', function() {
     it('should parse RGB colors correctly', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             Ka 1.000000 1.000000 1.000000
@@ -49,7 +49,7 @@ describe('MaterialParser', function() {
 
   describe('#parse_d', function() {
     it('should return the dissolve value as a number', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             d 0.5
@@ -63,7 +63,7 @@ describe('MaterialParser', function() {
 
   describe('#parse_illum', function() {
     it('should return the illum value as a number', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             illum 2
@@ -77,7 +77,7 @@ describe('MaterialParser', function() {
 
   describe('#parse_Ni', function() {
     it('should return the refraction index value as a number', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             Ni 2.5
@@ -91,7 +91,7 @@ describe('MaterialParser', function() {
 
   describe('#parse_Ns', function() {
     it('should return the specular exponent value as a number', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             Ns 250
@@ -105,7 +105,7 @@ describe('MaterialParser', function() {
 
   describe('#parse_sharpness', function() {
     it('should return the sharpess value as a number', function() {
-        let m = new MaterialParser(
+        let m = new MaterialLibrary(
             `
             newmtl my_material
             sharpness 100
@@ -120,7 +120,7 @@ describe('MaterialParser', function() {
   describe('#parseMap', function() {
     it('should parse the filename and options associated with the directives',
         function() {
-            let m = new MaterialParser(
+            let m = new MaterialLibrary(
                 `
                 newmtl my_material
                 map_Ka -cc on -blendu off -blendv off filename.jpg
