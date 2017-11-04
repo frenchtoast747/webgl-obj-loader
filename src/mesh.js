@@ -106,7 +106,6 @@ export class Mesh {
         that group and is appended to the unpacked indices array.
        */
         this.name = '';
-        this.mtl = null;
         const verts = [];
         const vertNormals = [];
         const textures = [];
@@ -256,6 +255,7 @@ export class Mesh {
 
         self.materialNames = materialNamesByIndex;
         self.materialIndices = materialIndicesByName;
+        self.materialsByIndex = {};
     }
 
     /**
@@ -292,6 +292,126 @@ export class Mesh {
                     case Layout.MATERIAL_INDEX.key:
                         dataView.setInt16(offset, this.vertexMaterialIndices[i], true);
                         break;
+                    case Layout.AMBIENT.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.ambient[0], true);
+                        dataView.setFloat32(offset + 4, material.ambient[1], true);
+                        dataView.setFloat32(offset + 8, material.ambient[2], true);
+                        break;
+                    }
+                    case Layout.DIFFUSE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.diffuse[0], true);
+                        dataView.setFloat32(offset + 4, material.diffuse[1], true);
+                        dataView.setFloat32(offset + 8, material.diffuse[2], true);
+                        break;
+                    }
+                    case Layout.SPECULAR.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.specular[0], true);
+                        dataView.setFloat32(offset + 4, material.specular[1], true);
+                        dataView.setFloat32(offset + 8, material.specular[2], true);
+                        break;
+                    }
+                    case Layout.SPECULAR_EXPONENT.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.specularExponent, true);
+                        break;
+                    }
+                    case Layout.EMISSIVE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.emissive[0], true);
+                        dataView.setFloat32(offset + 4, material.emissive[1], true);
+                        dataView.setFloat32(offset + 8, material.emissive[2], true);
+                        break;
+                    }
+                    case Layout.TRANSMISSION_FILTER.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.transmissionFilter[0], true);
+                        dataView.setFloat32(offset + 4, material.transmissionFilter[1], true);
+                        dataView.setFloat32(offset + 8, material.transmissionFilter[2], true);
+                        break;
+                    }
+                    case Layout.DISSOLVE.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.dissolve, true);
+                        break;
+                    }
+                    case Layout.ILLUMINATION.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setInt16(offset, material.illumination, true);
+                        break;
+                    }
+                    case Layout.REFRACTION_INDEX.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.refractionIndex, true);
+                        break;
+                    }
+                    case Layout.SHARPNESS.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setFloat32(offset, material.sharpness, true);
+                        break;
+                    }
+                    case Layout.ANTI_ALIASING.key: {
+                        const materialIndex = this.vertexMaterialIndices[i];
+                        const material = this.materialsByIndex[materialIndex];
+                        if (!material) {
+                            console.warn('Material "' + this.materialNames[materialIndex] + '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"');
+                            break;
+                        }
+                        dataView.setInt16(offset, material.antiAliasing, true);
+                        break;
+                    }
                 }
             }
         }
@@ -305,6 +425,20 @@ export class Mesh {
     }
 
     addMaterialLibrary (mtl) {
-        this.mtl = mtl;
+        for (const name in mtl.materials) {
+            if (!(name in this.materialIndices)) {
+                // This material is not referenced by the mesh
+                continue;
+            }
+
+            const material = mtl.materials[name];
+
+            // Find the material index for this material
+            const materialIndex = this.materialIndices[material.name]
+
+            // Put the material into the materialsByIndex object at the right
+            // spot as determined when the obj file was parsed
+            this.materialsByIndex[materialIndex] = material;
+        }
     }
 }
