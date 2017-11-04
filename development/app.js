@@ -135,7 +135,8 @@ function initShaders(){
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
 
-    shaderProgram.applyAttributePointers = function(layout) {
+    shaderProgram.applyAttributePointers = function(model) {
+        const layout = model.mesh.vertexBuffer.layout;
         if (shaderProgram.vertexPositionAttribute != -1) {
             var attr = layout.position;
             gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
@@ -181,7 +182,7 @@ function drawObject(model){
 //    gl.useProgram(shaderProgram);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, model.mesh.vertexBuffer);
-    shaderProgram.applyAttributePointers(model.mesh.vertexBuffer.layout);
+    shaderProgram.applyAttributePointers(model);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
     setMatrixUniforms();
