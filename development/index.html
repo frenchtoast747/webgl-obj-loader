@@ -28,7 +28,9 @@
         attribute vec3 aVertexPosition;
         attribute vec3 aVertexNormal;
         attribute vec2 aTextureCoord;
-        attribute float aMaterialIndex;
+        attribute vec3 aDiffuse;
+        attribute vec3 aSpecular;
+        attribute float aSpecularExponent;
 
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
@@ -42,36 +44,10 @@
         varying vec3 vSpecular;
         varying float vSpecularExponent;
 
-        struct Material {
-          vec3 diffuse;
-          vec3 specular;
-          float specularExponent;
-        };
-
-        Material material0 = Material(
-          vec3(0.000000, 0.000000, 0.000000),
-          vec3(1.000000, 0.645042, 0.125491),
-          5.0
-        );
-        Material material1 = Material(
-          vec3(0.800000, 0.000000, 0.002118),
-          vec3(1.000000, 1.000000, 1.000000),
-          30.0
-        );
-
-        Material pickMaterialByIndex(float i) {
-            if (i < 0.5) {
-              return material0;
-            } else if (0.5 <= i) {
-              return material1;
-            }
-        }
-
         void main(void) {
-            Material material = pickMaterialByIndex(aMaterialIndex);
-            vDiffuse = material.diffuse;
-            vSpecular = material.specular;
-            vSpecularExponent = material.specularExponent;
+            vDiffuse = aDiffuse;
+            vSpecular = aSpecular;
+            vSpecularExponent = aSpecularExponent;
 
             vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
             gl_Position = uPMatrix * vPosition;

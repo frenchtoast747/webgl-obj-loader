@@ -110,11 +110,25 @@ function initShaders(){
         console.warn('aTextureCoord not found in shader. Is it unused?');
     }
 
-    shaderProgram.materialIndexAttribute = gl.getAttribLocation(shaderProgram, "aMaterialIndex");
-    if (shaderProgram.materialIndexAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.materialIndexAttribute);
+    shaderProgram.diffuseAttribute = gl.getAttribLocation(shaderProgram, "aDiffuse");
+    if (shaderProgram.diffuseAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.diffuseAttribute);
     } else {
-        console.warn('aMaterialIndex not found in shader. Is it unused?');
+        console.warn('aDiffuse not found in shader. Is it unused?');
+    }
+
+    shaderProgram.specularAttribute = gl.getAttribLocation(shaderProgram, "aSpecular");
+    if (shaderProgram.specularAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.specularAttribute);
+    } else {
+        console.warn('aSpecular not found in shader. Is it unused?');
+    }
+
+    shaderProgram.specularExponentAttribute = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
+    if (shaderProgram.specularExponentAttribute != -1) {
+        gl.enableVertexAttribArray(shaderProgram.specularExponentAttribute);
+    } else {
+        console.warn('aSpecularExponent not found in shader. Is it unused?');
     }
 
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
@@ -141,9 +155,19 @@ function initShaders(){
             }
         }
 
-        if (shaderProgram.materialIndexAttribute != -1) {
-            var attr = layout.materialIndex;
-            gl.vertexAttribPointer(shaderProgram.materialIndexAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        if (shaderProgram.diffuseAttribute != -1) {
+            var attr = layout.diffuse;
+            gl.vertexAttribPointer(shaderProgram.diffuseAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        }
+
+        if (shaderProgram.specularAttribute != -1) {
+            var attr = layout.specular;
+            gl.vertexAttribPointer(shaderProgram.specularAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
+        }
+
+        if (shaderProgram.specularExponentAttribute != -1) {
+            var attr = layout.specularExponent;
+            gl.vertexAttribPointer(shaderProgram.specularExponentAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
         }
     }
 }
@@ -190,7 +214,9 @@ function initBuffers(){
     var layout = new OBJ.Layout(
         OBJ.Layout.POSITION,
         OBJ.Layout.NORMAL,
-        OBJ.Layout.MATERIAL_INDEX);
+        OBJ.Layout.DIFFUSE,
+        OBJ.Layout.SPECULAR,
+        OBJ.Layout.SPECULAR_EXPONENT);
 
     // initialize the mesh's buffers
     for (var mesh in app.meshes){
@@ -271,15 +297,15 @@ window.onload = function (){
         {
             name: 'die',
             obj: '/development/models/die.obj',
-            mtl: '/development/models/die.mtl'
+            mtl: '/development/models/die.mtl',
         },
         {
             obj: '/development/models/suzanne.obj',
-            mtl: true
-        },
-        {
-            obj: '/development/models/suzanne.obj'
-        }
+            mtl: true,
+        }, // ,
+        // {
+            // obj: '/development/models/suzanne.obj'
+        // }
     ]);
 
     p.then((models) => {
@@ -287,5 +313,6 @@ window.onload = function (){
             console.log('Name:', name);
             console.log('Mesh:', mesh);
         }
+        webGLStart(models);
     });
-}
+};
