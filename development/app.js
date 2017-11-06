@@ -89,46 +89,26 @@ function initShaders(){
     }
     gl.useProgram(shaderProgram);
 
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    if (shaderProgram.vertexPositionAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-    } else {
-        console.warn('aVertexPosition not found in shader. Is it unused?');
-    }
+    const attrs = {
+        'aVertexPosition': OBJ.Layout.POSITION.key,
+        'aVertexNormal': OBJ.Layout.NORMAL.key,
+        'aTextureCoord': OBJ.Layout.UV.key,
+        'aDiffuse': OBJ.Layout.DIFFUSE.key,
+        'aSpecular': OBJ.Layout.SPECULAR.key,
+        'aSpecularExponent': OBJ.Layout.SPECULAR_EXPONENT.key,
+    };
 
-    shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
-    if (shaderProgram.vertexNormalAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
-    } else {
-        console.warn('aVertexNormal not found in shader. Is it unused?');
-    }
-
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    if (shaderProgram.textureCoordAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-    } else {
-        console.warn('aTextureCoord not found in shader. Is it unused?');
-    }
-
-    shaderProgram.diffuseAttribute = gl.getAttribLocation(shaderProgram, "aDiffuse");
-    if (shaderProgram.diffuseAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.diffuseAttribute);
-    } else {
-        console.warn('aDiffuse not found in shader. Is it unused?');
-    }
-
-    shaderProgram.specularAttribute = gl.getAttribLocation(shaderProgram, "aSpecular");
-    if (shaderProgram.specularAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.specularAttribute);
-    } else {
-        console.warn('aSpecular not found in shader. Is it unused?');
-    }
-
-    shaderProgram.specularExponentAttribute = gl.getAttribLocation(shaderProgram, "aSpecularExponent");
-    if (shaderProgram.specularExponentAttribute != -1) {
-        gl.enableVertexAttribArray(shaderProgram.specularExponentAttribute);
-    } else {
-        console.warn('aSpecularExponent not found in shader. Is it unused?');
+    shaderProgram.attrIndices = {};
+    for (const attrName in attrs) {
+        if (!attrs.hasOwnProperty(attrName)) {
+            continue;
+        }
+        shaderProgram.attrIndices[attrName] = gl.getAttribLocation(shaderProgram, attrName);
+        if (shaderProgram.attrIndices[attrName] != -1) {
+            gl.enableVertexAttribArray(shaderProgram.attrIndices[attrName]);
+        } else {
+            console.warn('Shader attribute "' + attrName + '" not found in shader. Is it undeclared or unused in the shader code?');
+        }
     }
 
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
@@ -137,40 +117,24 @@ function initShaders(){
 
     shaderProgram.applyAttributePointers = function(model) {
         const layout = model.mesh.vertexBuffer.layout;
-        if (shaderProgram.vertexPositionAttribute != -1) {
-            var attr = layout.position;
-            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-        }
-
-        if (shaderProgram.vertexNormalAttribute != -1) {
-            var attr = layout.normal;
-            gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-        }
-
-        if (shaderProgram.textureCoordAttribute != -1) {
-            if (model.mesh.textures.length){
-                var attr = layout.uv;
-                gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-            } else{
-                gl.disableVertexAttribArray(shaderProgram.textureCoordAttribute);
+        for (const attrName in attrs) {
+            if (!attrs.hasOwnProperty(attrName)) {
+                continue;
+            }
+            const layoutKey = attrs[attrName];
+            if (shaderProgram.attrIndices[attrName] != -1) {
+                const attr = layout[layoutKey];
+                gl.vertexAttribPointer(
+                    shaderProgram.attrIndices[attrName],
+                    attr.size,
+                    gl[attr.type],
+                    attr.normalized,
+                    attr.stride,
+                    attr.offset);
             }
         }
 
-        if (shaderProgram.diffuseAttribute != -1) {
-            var attr = layout.diffuse;
-            gl.vertexAttribPointer(shaderProgram.diffuseAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-        }
-
-        if (shaderProgram.specularAttribute != -1) {
-            var attr = layout.specular;
-            gl.vertexAttribPointer(shaderProgram.specularAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-        }
-
-        if (shaderProgram.specularExponentAttribute != -1) {
-            var attr = layout.specularExponent;
-            gl.vertexAttribPointer(shaderProgram.specularExponentAttribute, attr.size, gl[attr.type], attr.normalized, attr.stride, attr.offset);
-        }
-    }
+    };
 }
 
 function drawObject(model){
