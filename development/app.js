@@ -118,7 +118,7 @@ function initShaders(){
     shaderProgram.applyAttributePointers = function(model) {
         const layout = model.mesh.vertexBuffer.layout;
         for (const attrName in attrs) {
-            if (!attrs.hasOwnProperty(attrName)) {
+            if (!attrs.hasOwnProperty(attrName) || shaderProgram.attrIndices[attrName] == -1) {
                 continue;
             }
             const layoutKey = attrs[attrName];
@@ -180,6 +180,7 @@ function initBuffers(){
         OBJ.Layout.POSITION,
         OBJ.Layout.NORMAL,
         OBJ.Layout.DIFFUSE,
+        OBJ.Layout.UV,
         OBJ.Layout.SPECULAR,
         OBJ.Layout.SPECULAR_EXPONENT);
 
