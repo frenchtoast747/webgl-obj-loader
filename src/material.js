@@ -532,7 +532,11 @@ export class MaterialLibrary {
       }
     }
 
-    for ([option, values] of Object.entries(optionsToValues)) {
+    for (option in optionsToValues) {
+      if (!optionsToValues.hasOwnProperty(option)){
+        continue;
+      }
+      values = optionsToValues[option];
       let optionMethod = this[`parse_${option}`];
       if (optionMethod) {
         optionMethod.bind(this)(values, options);
