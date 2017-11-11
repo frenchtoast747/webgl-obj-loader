@@ -1,4 +1,6 @@
 # webgl-obj-loader
+[![Build Status](https://travis-ci.org/frenchtoast747/webgl-obj-loader.svg?branch=master)](https://travis-ci.org/frenchtoast747/webgl-obj-loader)
+
 A simple script to help bring OBJ models to your WebGL world. I originally
 wrote this script for my CS Graphics class so that we didn't have to only have
 cubes and spheres for models in order to learn WebGL. At the time, the only
