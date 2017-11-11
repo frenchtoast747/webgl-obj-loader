@@ -24,42 +24,6 @@ OBJ.Material = Material;
 OBJ.MaterialLibrary = MaterialLibrary;
 OBJ.Layout = Layout;
 
-  function each(items, fn){
-    for (var i = 0; i < items.length; i++){
-      var ret = fn(items[i], i);
-      if (ret === false){
-        break;
-      }
-    }
-  }
-
-  var Ajax = function(){
-    // this is just a helper class to ease ajax calls
-    var _this = this;
-    this.xmlhttp = new XMLHttpRequest();
-
-    this.get = function(url, callback){
-      _this.xmlhttp.onreadystatechange = function(){
-        if(_this.xmlhttp.readyState === 4){
-          callback(_this.xmlhttp.responseText, _this.xmlhttp.status);
-        }
-      };
-      _this.xmlhttp.open('GET', url, true);
-      _this.xmlhttp.send();
-    }
-  };
-
-  function download_file(url, callback){
-    new Ajax().get(url, function(data, status){
-      if (status !== 200){
-        console.error('An error has occurred while trying to download the ' +
-          'file "' + url + '". Is the URL correct?');
-        throw '';
-      }
-      callback(data);
-    });
-  }
-
   /**
    * Accepts a list of model objects and returns a Promise that
    * resolves when all models have been downloaded and parsed.
@@ -173,65 +137,36 @@ OBJ.Layout = Layout;
    * @param {Object} meshes In case other meshes are loaded separately or if a previously declared variable is desired to be used, pass in a (possibly empty) json object of the pattern: { '<mesh_name>': OBJ.Mesh }
    *
    */
-  OBJ.downloadMeshes = function (nameAndAttrs, completionCallback, meshes){
-    // the total number of meshes. this is used to implement "blocking"
-    var semaphore = Object.keys(nameAndAttrs).length;
-    // if error is true, an alert will given
-    var error = false;
-    // this is used to check if all meshes have been downloaded
-    // if meshes is supplied, then it will be populated, otherwise
-    // a new object is created. this will be passed into the completionCallback
-    if(meshes === undefined) meshes = {};
-    // loop over the mesh_name,url key,value pairs
-    for(var mesh_name in nameAndAttrs){
-      if(nameAndAttrs.hasOwnProperty(mesh_name)){
-        var value = nameAndAttrs[mesh_name];
-        var url = value;
-        // maps mesh_name to Material() instances
-        var materials = {};
-
-        if (typeof value === typeof {}){
-          url = value.url;
-          semaphore += value.materials.length;
-          each(value.materials, function(material_url){
-            download_file(material_url, function(material){
-              material
-            })
-          });
-        }
-        else{
-
-        }
-
-        new Ajax().get(url, (function(name) {
-          return function (data, status) {
-            if (status === 200) {
-              meshes[name] = new OBJ.Mesh(data);
-            }
-            else {
-              error = true;
-              console.error('An error has occurred and the mesh "' +
-                name + '" could not be downloaded.');
-            }
-            // the request has finished, decrement the counter
-            semaphore--;
-            if (semaphore === 0) {
-              if (error) {
-                // if an error has occurred, the user is notified here and the
-                // callback is not called
-                console.error('An error has occurred and one or meshes has not been ' +
-                  'downloaded. The execution of the script has terminated.');
-                throw '';
-              }
-              // there haven't been any errors in retrieving the meshes
-              // call the callback
-              completionCallback(meshes);
-            }
-          }
-        })(mesh_name));
-      }
+  OBJ.downloadMeshes = function (nameAndURLs, completionCallback, meshes) {
+    if (meshes === undefined) {
+      meshes = {};
     }
-  };
+
+    const completed = [];
+
+    for (const mesh_name in nameAndURLs) {
+      if (!nameAndURLs.hasOwnProperty(mesh_name)) {
+        continue;
+      }
+      const url = nameAndURLs[mesh_name];
+      completed.push(
+        fetch(url)
+          .then((response) => response.text())
+          .then((data) => {
+            return [mesh_name, new OBJ.Mesh(data)];
+          })
+      );
+    }
+
+    Promise.all(completed)
+      .then((ms) => {
+        for (let [name, mesh] of ms) {
+          meshes[name] = mesh;
+        }
+
+        return completionCallback(meshes);
+      });
+  }
 
   var _buildBuffer = function( gl, type, data, itemSize ){
     var buffer = gl.createBuffer();
