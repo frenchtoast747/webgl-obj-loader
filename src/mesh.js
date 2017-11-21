@@ -9,7 +9,7 @@ import {Layout} from "./layout"
  * - Options
  *   - materials
  */
-export class Mesh {
+export default class Mesh {
     /**
      * Create a Mesh
      * @param {String} objectData a string representation of an OBJ file with

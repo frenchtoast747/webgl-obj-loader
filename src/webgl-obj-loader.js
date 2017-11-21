@@ -1,7 +1,7 @@
 
-import {Mesh} from './mesh'
-import {Material, MaterialLibrary} from './material'
-import {Layout} from './layout'
+import Mesh from './mesh';
+import {Material, MaterialLibrary} from './material';
+import {Layout} from './layout';
 
 if (!Object.entries)
 Object.entries = function( obj ){
