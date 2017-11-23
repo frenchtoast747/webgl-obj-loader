@@ -135,6 +135,9 @@ export default class Mesh {
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
+            if (!line || line.startsWith('#')) {
+                continue;
+            }
             const elements = line.split(WHITESPACE_RE);
             elements.shift();
 
@@ -200,6 +203,11 @@ export default class Mesh {
                          attributes location (v), texture (vt), and normal (vn).
                          */
                         let vertex = elements[j].split('/');
+                        // it's possible for faces to only specify the vertex
+                        // and the normal. In this case, vertex will only have
+                        // a length of 2 and not 3 and the normal will be the
+                        // second item in the list with an index of 1.
+                        let normalIndex = vertex.length - 1;
                         /*
                          The verts, textures, and vertNormals arrays each contain a
                          flattend array of coordinates.
@@ -229,9 +237,9 @@ export default class Mesh {
                             unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 1]);
                         }
                         // Vertex normals
-                        unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 0]);
-                        unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 1]);
-                        unpacked.norms.push(+vertNormals[(vertex[2] - 1) * 3 + 2]);
+                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 0]);
+                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 1]);
+                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 2]);
                         // Vertex material indices
                         unpacked.materialIndices.push(currentMaterialIndex);
                         // add the newly created Vertex to the list of indices
