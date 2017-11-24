@@ -1,0 +1,6 @@
+development/*
+test/*
+
+.travis.yml
+webpack.*
+package-lock.json
