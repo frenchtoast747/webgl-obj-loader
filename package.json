@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --config webpack.dev.js",
     "watch": "npm run build -- -w",
-    "release": "webpack --config webpack.prod.js",
+    "release": "webpack --config webpack.dev.js && webpack --config webpack.prod.js",
     "test": "mocha --require babel-register",
     "coverage": "nyc npm test",
     "coverage:report": "nyc report -r html"

@@ -240,6 +240,22 @@ http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
+**1.0.0**
+* Modularized all of the source files into ES6 modules.
+* * The Mesh, MaterialLibrary, and Material classes are now
+    actual ES6 classes.
+* Added tests for each of the classes
+* * Found a bug in the Mesh class. Vertex normals would not appear
+    if the face declaration used the shorthand variant; e.g. `f 1/1`
+* Provided Initial MTL file parsing support.
+* * Still requires Documentation. For now, have a look at the tests in the
+    test directory for examples of use.
+* * Use the new downloadModels() function in order to download the OBJ meshes
+    complete with their MTL files attached. If the MTL files reference images,
+    by default, those images will be downloaded and attached.
+* The downloading functions now use the new `fetch()` API which utilizes
+  promises.
+
 **0.1.1**
 * Support for NodeJS.
 
