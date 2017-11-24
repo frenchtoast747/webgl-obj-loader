@@ -1,16 +1,19 @@
 path = require('path');
+const webpack = require('webpack');
+
+
+
 
 module.exports = {
     entry: [
-        path.join(__dirname, '/src/webgl-obj-loader.js')
+        path.join(__dirname, '/src/index.js')
     ],
-    devtool: 'source-map',
     output: {
         path: path.join(__dirname, '/dist'),
         publicPath: '/',
+        library: 'OBJ',
         libraryTarget: 'umd',
-        filename: 'webgl-obj-loader.js',
-        sourceMapFilename: 'webgl-obj-loader.js.map'
+        umdNamedDefine: true,
     },
     module: {
         loaders: [{

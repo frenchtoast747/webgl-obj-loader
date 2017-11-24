@@ -1,11 +1,12 @@
 {
   "name": "webgl-obj-loader",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
-  "main": "src/webgl-obj-loader.js",
+  "main": "dist/webgl-obj-loader.min.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --config webpack.dev.js",
     "watch": "npm run build -- -w",
+    "release": "webpack --config webpack.prod.js",
     "test": "mocha --require babel-register",
     "coverage": "nyc npm test",
     "coverage:report": "nyc report -r html"
@@ -43,6 +44,7 @@
     "eslint-config-google": "^0.9.1",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
-    "webpack": "^3.8.1"
+    "webpack": "^3.8.1",
+    "webpack-merge": "^4.1.1"
   }
 }
