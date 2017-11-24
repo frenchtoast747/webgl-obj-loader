@@ -3,17 +3,6 @@ import Mesh from './mesh';
 import {Material, MaterialLibrary} from './material';
 import {Layout} from './layout';
 
-if (!Object.entries)
-Object.entries = function( obj ){
-  var ownProps = Object.keys( obj ),
-      i = ownProps.length,
-      resArray = new Array(i); // preallocate the Array
-  while (i--)
-    resArray[i] = [ownProps[i], obj[ownProps[i]]];
-
-  return resArray;
-};
-
 /**
  * @namespace
  */
@@ -24,14 +13,70 @@ OBJ.Material = Material;
 OBJ.MaterialLibrary = MaterialLibrary;
 OBJ.Layout = Layout;
 
+  OBJ.downloadMtlTextures = function (mtl, root) {
+    const mapAttributes = [
+      'mapDiffuse',
+      'mapAmbient',
+      'mapSpecular',
+      'mapDissolve',
+      'mapBump',
+      'mapDisplacement',
+      'mapDecal',
+      'mapEmissive',
+    ];
+    if (!root.endsWith('/')) {
+      root += '/';
+    }
+    let textures = [];
+
+    for (let material in mtl.materials) {
+      if (!mtl.materials.hasOwnProperty(material)) {
+        continue;
+      }
+      material = mtl.materials[material];
+
+      for (let attr of mapAttributes) {
+        let mapData = material[attr];
+        if (!mapData) {
+          continue;
+        }
+
+        let url = root + mapData.filename;
+        textures.push(
+          fetch(url)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error()
+              }
+              return response.blob();
+            })
+            .then(function(data) {
+              let image = new Image();
+              image.src = URL.createObjectURL(data);
+              mapData.texture = image;
+            })
+            .catch(() => {
+              console.error(`Unable to download texture: ${url}`);
+            })
+        );
+
+      }
+    }
+
+    return Promise.all(textures);
+  }
+
+
   /**
-   * Accepts a list of model objects and returns a Promise that
+   * Accepts a list of model request objects and returns a Promise that
    * resolves when all models have been downloaded and parsed.
    *
    * The list of model objects follow this interface:
    * {
    *  obj: 'path/to/model.obj',
    *  mtl: true | 'path/to/model.mtl',
+   *  downloadMtlTextures: true | false
+   *  mtlTextureRoot: '/models/suzanne/maps'
    *  name: 'suzanne'
    * }
    *
@@ -48,6 +93,17 @@ OBJ.Layout = Layout;
    * The `name` attribute is optional and is a human friendly name to be
    * included with the parsed OBJ and MTL files. If not given, the base .obj
    * filename will be used.
+   *
+   * The `downloadMtlTextures` attribute is a flag for automatically downloading
+   * any images found in the MTL file and attaching them to each Material
+   * created from that file. For example, if material.mapDiffuse is set (there
+   * was data in the MTL file), then material.mapDiffuse.texture will contain
+   * the downloaded image. This option defaults to `true`. By default, the MTL's
+   * URL will be used to determine the location of the images.
+   *
+   * The `mtlTextureRoot` attribute is optional and should point to the location
+   * on the server that this MTL's texture files are located. The default is to
+   * use the MTL file's location.
    *
    * @returns {Promise} the result of downloading the given list of models. The
    * promise will resolve with an object whose keys are the names of the models
@@ -94,7 +150,26 @@ OBJ.Layout = Layout;
           fetch(mtl)
             .then((response) => response.text())
             .then((data) => {
-              return new OBJ.MaterialLibrary(data);
+              let material = new OBJ.MaterialLibrary(data);
+              if (model.downloadMtlTextures !== false) {
+                let root = model.mtlTextureRoot;
+                if (!root) {
+                  // get the directory of the MTL file as default
+                  root = mtl.substr(0, mtl.lastIndexOf("/"));
+                }
+                // downloadMtlTextures returns a Promise that
+                // is resolved once all of the images it
+                // contains are downloaded. These are then
+                // attached to the map data objects
+                return Promise.all([
+                  Promise.resolve(material),
+                  OBJ.downloadMtlTextures(material, root)
+                ]);
+              }
+              return Promise.all(Promise.resolve(material));
+            })
+            .then((value) => {
+              return value[0];
             })
         );
       }
@@ -104,6 +179,9 @@ OBJ.Layout = Layout;
 
     return Promise.all(finished)
       .then((ms) => {
+        // the "finished" promise is a list of name, Mesh instance,
+        // and MaterialLibary instance. This unpacks and returns an
+        // object mapping name to Mesh (Mesh points to MTL).
         const models = {};
 
         for (const model of ms) {
