@@ -67,6 +67,29 @@ describe('Mesh', function() {
         -1.1, -1
       ]);
     });
+
+    it('should contain the u, v, and w texture coordinates', function() {
+      const m = new Mesh(
+        `
+        # including a single vertex and a single vertex normal so
+        # that the face parsing works successfully.
+        v 0 0 0
+        vn 0 0 0
+
+        vt 0 0.456 0.5
+        vt 1.0 1 0
+        vt -1.1 -1 1.0
+        f 1/1/1 1/2/1 1/3/1
+        `, {
+          enableWTextureCoord: true
+        }
+      );
+      expect(m.textures).to.deep.equal([
+           0, 0.456, 0.5,
+           1,     1,   0,
+        -1.1,    -1,   1
+      ]);
+    });
   });
 
   describe('Test face parsing', function(){
