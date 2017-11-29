@@ -5,32 +5,37 @@ import {Layout} from "./layout"
  * and collect the vertex, vertex normal, texture, and face information. This
  * information can then be used later on when creating your VBOs. See
  * OBJ.initMeshBuffers for an example of how to use the newly created Mesh
- *
- * - Options
- *   - materials
  */
 export default class Mesh {
     /**
      * Create a Mesh
-     * @param {String} objectData a string representation of an OBJ file with
-     *        newlines preserved.
-     * @param {Object} options a JS object containing valid options. See class
-     *        documentation for options.
+     * @param {String} objectData - a string representation of an OBJ file with
+     *     newlines preserved.
+     * @param {Object} options - a JS object containing valid options. See class
+     *     documentation for options.
+     * @param {bool} options.enableWTextureCoord - Texture coordinates can have
+     *     an optional "w" coordinate after the u and v coordinates. This extra
+     *     value can be used in order to perform fancy transformations on the
+     *     textures themselves. Default is to truncate to only the u an v
+     *     coordinates. Passing true will provide a default value of 0 in the
+     *     event that any or all texture coordinates don't provide a w value.
+     *     Always use the textureStride attribute in order to determine the
+     *     stride length of the texture coordinates when rendering the element
+     *     array.
      */
     constructor(objectData, options) {
         options = options || {};
-        options.materials = options.materials || [];
+        options.materials = options.materials || {};
+        options.enableWTextureCoord = !!options.enableWTextureCoord;
 
         let self = this;
-        self.has_materials = !!options.materials;
-        // maps material name to Material() instance
-        self.materials = {};
         // the list of unique vertex, normal, texture, attributes
         self.vertices = [];
         self.vertexNormals = [];
         self.textures = [];
         // the indicies to draw the faces
         self.indices = [];
+        self.textureStride = options.enableWTextureCoord? 3 : 2;
 
         /*
         The OBJ file format does a sort of compression when saving a model in a
@@ -148,8 +153,23 @@ export default class Mesh {
                 // if this is a vertex normal
                 vertNormals.push(...elements);
             } else if (TEXTURE_RE.test(line)) {
-                // if this is a texture
-                textures.push(...elements);
+                let coords = elements;
+                // by default, the loader will only look at the U and V
+                // coordinates of the vt declaration. So, this truncates the
+                // elements to only those 2 values. If W texture coordinate
+                // support is enabled, then the texture coordinate is
+                // expected to have three values in it.
+                if (elements.length > 2 && !options.enableWTextureCoord) {
+                    coords = elements.slice(0, 1);
+                }
+                // If for some reason W texture coordinate support is enabled
+                // and only the U and V coordinates are given, then we supply
+                // the default value of 0 so that the stride length is correct
+                // when the textures are unpacked below.
+                else if (elements.length === 2 && options.enableWTextureCoord) {
+                    coords.push(0);
+                }
+                textures.push(...coords);
             } else if (USE_MATERIAL_RE.test(line)) {
                 const materialName = elements[0];
 
@@ -233,8 +253,12 @@ export default class Mesh {
                         unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
                         // Vertex textures
                         if (textures.length) {
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 0]);
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * 2 + 1]);
+                            let stride = options.enableWTextureCoord? 3 : 2;
+                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 0]);
+                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 1]);
+                            if (options.enableWTextureCoord) {
+                                unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 2]);
+                            }
                         }
                         // Vertex normals
                         unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 0]);
