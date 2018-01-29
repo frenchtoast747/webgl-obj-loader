@@ -1,5 +1,16 @@
 import {Layout} from "./layout"
 
+function* triangulate(elements) {
+    if (elements.length <= 3) {
+        yield elements;
+    } else if (elements.length == 4) {
+        yield [elements[0], elements[1], elements[2]];
+        yield [elements[2], elements[3], elements[0]];
+    } else {
+        yield [elements[0], elements[1], elements[2]];
+    }
+}
+
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data
  * and collect the vertex, vertex normal, texture, and face information. This
@@ -191,90 +202,78 @@ export default class Mesh {
                 becomes:
                   ['16/92/11', '14/101/22', '1/69/1'];
                 */
-                let quad = false;
-                for (let j = 0, eleLen = elements.length; j < eleLen; j++) {
-                    // Triangulating quads
-                    // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
-                    // corresponding triangles:
-                    //      'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2'
-                    //      'f v2/t2/vn2 v3/t3/vn3 v0/t0/vn0'
-                    if (j === 3 && !quad) {
-                        // add v2/t2/vn2 in again before continuing to 3
-                        j = 2;
-                        quad = true;
-                    }
-                    const hash0 = elements[0] + ',' + currentMaterialIndex;
-                    const hash = elements[j] + ',' + currentMaterialIndex;
-                    if (hash in unpacked.hashindices) {
-                        unpacked.indices.push(unpacked.hashindices[hash]);
-                    } else {
-                        /*
-                        Each element of the face line array is a Vertex which has its
-                        attributes delimited by a forward slash. This will separate
-                        each attribute into another array:
-                            '19/92/11'
-                        becomes:
-                            Vertex = ['19', '92', '11'];
-                        where
-                            Vertex[0] is the vertex index
-                            Vertex[1] is the texture index
-                            Vertex[2] is the normal index
-                         Think of faces having Vertices which are comprised of the
-                         attributes location (v), texture (vt), and normal (vn).
-                         */
-                        let vertex = elements[j].split('/');
-                        // it's possible for faces to only specify the vertex
-                        // and the normal. In this case, vertex will only have
-                        // a length of 2 and not 3 and the normal will be the
-                        // second item in the list with an index of 1.
-                        let normalIndex = vertex.length - 1;
-                        /*
-                         The verts, textures, and vertNormals arrays each contain a
-                         flattend array of coordinates.
+                const triangles = triangulate(elements);
+                for (let elements of triangles) {
+                    for (let j = 0, eleLen = elements.length; j < eleLen; j++) {
+                        const hash0 = elements[0] + ',' + currentMaterialIndex;
+                        const hash = elements[j] + ',' + currentMaterialIndex;
+                        if (hash in unpacked.hashindices) {
+                            unpacked.indices.push(unpacked.hashindices[hash]);
+                        } else {
+                            /*
+                            Each element of the face line array is a Vertex which has its
+                            attributes delimited by a forward slash. This will separate
+                            each attribute into another array:
+                                '19/92/11'
+                            becomes:
+                                Vertex = ['19', '92', '11'];
+                            where
+                                Vertex[0] is the vertex index
+                                Vertex[1] is the texture index
+                                Vertex[2] is the normal index
+                            Think of faces having Vertices which are comprised of the
+                            attributes location (v), texture (vt), and normal (vn).
+                            */
+                            let vertex = elements[j].split('/');
+                            // it's possible for faces to only specify the vertex
+                            // and the normal. In this case, vertex will only have
+                            // a length of 2 and not 3 and the normal will be the
+                            // second item in the list with an index of 1.
+                            let normalIndex = vertex.length - 1;
+                            /*
+                            The verts, textures, and vertNormals arrays each contain a
+                            flattend array of coordinates.
 
-                         Because it gets confusing by referring to Vertex and then
-                         vertex (both are different in my descriptions) I will explain
-                         what's going on using the vertexNormals array:
+                            Because it gets confusing by referring to Vertex and then
+                            vertex (both are different in my descriptions) I will explain
+                            what's going on using the vertexNormals array:
 
-                         vertex[2] will contain the one-based index of the vertexNormals
-                         section (vn). One is subtracted from this index number to play
-                         nice with javascript's zero-based array indexing.
+                            vertex[2] will contain the one-based index of the vertexNormals
+                            section (vn). One is subtracted from this index number to play
+                            nice with javascript's zero-based array indexing.
 
-                         Because vertexNormal is a flattened array of x, y, z values,
-                         simple pointer arithmetic is used to skip to the start of the
-                         vertexNormal, then the offset is added to get the correct
-                         component: +0 is x, +1 is y, +2 is z.
+                            Because vertexNormal is a flattened array of x, y, z values,
+                            simple pointer arithmetic is used to skip to the start of the
+                            vertexNormal, then the offset is added to get the correct
+                            component: +0 is x, +1 is y, +2 is z.
 
-                         This same process is repeated for verts and textures.
-                         */
-                        // Vertex position
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 0]);
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 1]);
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
-                        // Vertex textures
-                        if (textures.length) {
-                            let stride = options.enableWTextureCoord? 3 : 2;
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 0]);
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 1]);
-                            if (options.enableWTextureCoord) {
-                                unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 2]);
+                            This same process is repeated for verts and textures.
+                            */
+                            // Vertex position
+                            unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 0]);
+                            unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 1]);
+                            unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
+                            // Vertex textures
+                            if (textures.length) {
+                                let stride = options.enableWTextureCoord? 3 : 2;
+                                unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 0]);
+                                unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 1]);
+                                if (options.enableWTextureCoord) {
+                                    unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 2]);
+                                }
                             }
+                            // Vertex normals
+                            unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 0]);
+                            unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 1]);
+                            unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 2]);
+                            // Vertex material indices
+                            unpacked.materialIndices.push(currentMaterialIndex);
+                            // add the newly created Vertex to the list of indices
+                            unpacked.hashindices[hash] = unpacked.index;
+                            unpacked.indices.push(unpacked.index);
+                            // increment the counter
+                            unpacked.index += 1;
                         }
-                        // Vertex normals
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 0]);
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 1]);
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 2]);
-                        // Vertex material indices
-                        unpacked.materialIndices.push(currentMaterialIndex);
-                        // add the newly created Vertex to the list of indices
-                        unpacked.hashindices[hash] = unpacked.index;
-                        unpacked.indices.push(unpacked.index);
-                        // increment the counter
-                        unpacked.index += 1;
-                    }
-                    if (j === 3 && quad) {
-                        // add v0/t0/vn0 onto the second triangle
-                        unpacked.indices.push(unpacked.hashindices[hash0]);
                     }
                 }
             }

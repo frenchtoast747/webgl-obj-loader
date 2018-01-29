@@ -3,5 +3,14 @@
         "env",
         "stage-3"
     ],
-    "retainLines": true
+    "retainLines": true,
+    "plugins": [
+        [
+            "transform-runtime",
+            {
+                "polyfill": false,
+                "regenerator": true
+            }
+        ]
+    ]
 }
