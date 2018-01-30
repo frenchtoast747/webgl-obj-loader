@@ -7,7 +7,9 @@ function* triangulate(elements) {
         yield [elements[0], elements[1], elements[2]];
         yield [elements[2], elements[3], elements[0]];
     } else {
-        yield [elements[0], elements[1], elements[2]];
+        for (let i = 0; i < elements.length  - 1; i++) {
+            yield [elements[0], elements[i], elements[i + 1]];
+        }
     }
 }
 
@@ -203,10 +205,10 @@ export default class Mesh {
                   ['16/92/11', '14/101/22', '1/69/1'];
                 */
                 const triangles = triangulate(elements);
-                for (let elements of triangles) {
-                    for (let j = 0, eleLen = elements.length; j < eleLen; j++) {
-                        const hash0 = elements[0] + ',' + currentMaterialIndex;
-                        const hash = elements[j] + ',' + currentMaterialIndex;
+                for (let triangle of triangles) {
+                    for (let j = 0, eleLen = triangle.length; j < eleLen; j++) {
+                        const hash0 = triangle[0] + ',' + currentMaterialIndex;
+                        const hash = triangle[j] + ',' + currentMaterialIndex;
                         if (hash in unpacked.hashindices) {
                             unpacked.indices.push(unpacked.hashindices[hash]);
                         } else {
@@ -224,7 +226,7 @@ export default class Mesh {
                             Think of faces having Vertices which are comprised of the
                             attributes location (v), texture (vt), and normal (vn).
                             */
-                            let vertex = elements[j].split('/');
+                            let vertex = triangle[j].split('/');
                             // it's possible for faces to only specify the vertex
                             // and the normal. In this case, vertex will only have
                             // a length of 2 and not 3 and the normal will be the
