@@ -114,6 +114,9 @@ export function downloadModels (models) {
       );
     }
 
+    let options = {};
+    options.indicesPerMaterial = !!model.indicesPerMaterial;    
+
     // if the name is not provided, dervive it from the given OBJ
     let name = model.name;
     if (!name) {
@@ -126,7 +129,7 @@ export function downloadModels (models) {
       fetch(model.obj)
         .then((response) => response.text())
         .then((data) => {
-          return new Mesh(data);
+          return new Mesh(data, options);
         })
     );
 

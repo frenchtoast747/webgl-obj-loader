@@ -27,6 +27,7 @@ export default class Mesh {
         options = options || {};
         options.materials = options.materials || {};
         options.enableWTextureCoord = !!options.enableWTextureCoord;
+        options.indicesPerMaterial = !!options.indicesPerMaterial;
 
         let self = this;
         // the list of unique vertex, normal, texture, attributes
@@ -119,12 +120,14 @@ export default class Mesh {
         const materialIndicesByName = {};
         // keep track of what material we've seen last
         let currentMaterialIndex = -1;
+        // keep track if pushing indices by materials - otherwise not used
+        let currentObjectByMaterialIndex = 0;
         // unpacking stuff
         unpacked.verts = [];
         unpacked.norms = [];
         unpacked.textures = [];
         unpacked.hashindices = {};
-        unpacked.indices = [];
+        unpacked.indices = [[]];
         unpacked.materialIndices = [];
         unpacked.index = 0;
 
@@ -178,6 +181,13 @@ export default class Mesh {
                     // new material we've never seen
                     materialNamesByIndex.push(materialName);
                     materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
+                    // push new array into indices
+                    if (options.indicesPerMaterial) {
+                        if (materialIndicesByName[materialName] > 0) {
+                            unpacked.indices.push([]);
+                            currentObjectByMaterialIndex = materialIndicesByName[materialName];
+                        }
+                    }
                 }
 
                 // keep track of the current material index
@@ -206,7 +216,7 @@ export default class Mesh {
                     const hash0 = elements[0] + ',' + currentMaterialIndex;
                     const hash = elements[j] + ',' + currentMaterialIndex;
                     if (hash in unpacked.hashindices) {
-                        unpacked.indices.push(unpacked.hashindices[hash]);
+                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
                     } else {
                         /*
                         Each element of the face line array is a Vertex which has its
@@ -268,13 +278,13 @@ export default class Mesh {
                         unpacked.materialIndices.push(currentMaterialIndex);
                         // add the newly created Vertex to the list of indices
                         unpacked.hashindices[hash] = unpacked.index;
-                        unpacked.indices.push(unpacked.index);
+                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
                         // increment the counter
                         unpacked.index += 1;
                     }
                     if (j === 3 && quad) {
                         // add v0/t0/vn0 onto the second triangle
-                        unpacked.indices.push(unpacked.hashindices[hash0]);
+                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash0]);
                     }
                 }
             }
@@ -283,7 +293,7 @@ export default class Mesh {
         self.vertexNormals = unpacked.norms;
         self.textures = unpacked.textures;
         self.vertexMaterialIndices = unpacked.materialIndices;
-        self.indices = unpacked.indices;
+        self.indices = options.indicesPerMaterial ? unpacked.indices : unpacked.indices[currentObjectByMaterialIndex];
 
         self.materialNames = materialNamesByIndex;
         self.materialIndices = materialIndicesByName;
