@@ -235,6 +235,9 @@ fs.readFile(meshPath, opt, function (err, data){
 });
 ```
 
+## Webpack Support
+Thanks to [mentos1386](https://github.com/mentos1386) for the [webpack-obj-loader](https://github.com/mentos1386/webpack-obj-loader)!
+
 ## Demo
 http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
