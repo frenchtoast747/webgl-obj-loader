@@ -300,6 +300,169 @@ export default class Mesh {
         self.materialsByIndex = {};
     }
 
+    calculateTangentsAndBitangents() {
+        console.assert(this.vertices && this.vertices.length &&
+            this.vertexNormals && this.vertexNormals.length &&
+            this.textures && this.textures.length, "Missing attributes for calculating tangents and bitangents");
+
+        const unpacked = {};
+        unpacked.tangents = [...new Array(this.vertices.length)].map(v => 0); 
+        unpacked.bitangents = [...new Array(this.vertices.length)].map(v => 0); 
+
+        // Loop through all faces in the whole mesh
+        let indices;
+        // If sorted by material
+        if (Array.isArray(this.indices[0])) {
+            debugger;
+            indices = [].concat.apply([], this.indices);
+        } else {
+            indices = this.indices;
+        }   
+    
+        const vertices = this.vertices;
+        const normals = this.vertexNormals;
+        const uvs = this.textures;
+        
+        for (let i = 0; i < indices.length; i+= 3) {
+            const i0 = indices[i + 0];
+            const i1 = indices[i + 1];
+            const i2 = indices[i + 2];
+
+            const x_v0 = vertices[i0 * 3 + 0]; 
+            const y_v0 = vertices[i0 * 3 + 1];
+            const z_v0 = vertices[i0 * 3 + 2];
+
+            const x_uv0 = uvs[i0 * 2 + 0];
+            const y_uv0 = uvs[i0 * 2 + 1];
+
+            const x_v1 = vertices[i1 * 3 + 0];
+            const y_v1 = vertices[i1 * 3 + 1];
+            const z_v1 = vertices[i1 * 3 + 2];
+
+            const x_uv1 = uvs[i1 * 2 + 0];
+            const y_uv1 = uvs[i1 * 2 + 1];
+
+            const x_v2 = vertices[i2 * 3 + 0];
+            const y_v2 = vertices[i2 * 3 + 1];
+            const z_v2 = vertices[i2 * 3 + 2];
+
+            const x_uv2 = uvs[i2 * 2 + 0];
+            const y_uv2 = uvs[i2 * 2 + 1];
+
+            const x_deltaPos1 = x_v1 - x_v0;
+            const y_deltaPos1 = y_v1 - y_v0;
+            const z_deltaPos1 = z_v1 - z_v0;
+
+            const x_deltaPos2 = x_v2 - x_v0;
+            const y_deltaPos2 = y_v2 - y_v0;
+            const z_deltaPos2 = z_v2 - z_v0;
+
+            const x_uvDeltaPos1 = x_uv1 - x_uv0;
+            const y_uvDeltaPos1 = y_uv1 - y_uv0;
+
+            const x_uvDeltaPos2 = x_uv2 - x_uv0;
+            const y_uvDeltaPos2 = y_uv2 - y_uv0;
+
+            const rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;
+            const r = 1.0 / (Math.abs(rInv < 0.0001) ? 1.0 : rInv)
+
+            // Tangent
+            const x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;
+            const y_tangent = (y_deltaPos1 * y_uvDeltaPos2 - y_deltaPos2 * y_uvDeltaPos1) * r;
+            const z_tangent = (z_deltaPos1 * y_uvDeltaPos2 - z_deltaPos2 * y_uvDeltaPos1) * r;
+
+            // Bitangent
+            const x_bitangent = (x_deltaPos2 * x_uvDeltaPos1 - x_deltaPos1 * x_uvDeltaPos2) * r;
+            const y_bitangent = (y_deltaPos2 * x_uvDeltaPos1 - y_deltaPos1 * x_uvDeltaPos2) * r;
+            const z_bitangent = (z_deltaPos2 * x_uvDeltaPos1 - z_deltaPos1 * x_uvDeltaPos2) * r;
+
+            // Gram-Schmidt orthogonalize
+            //t = glm::normalize(t - n * glm:: dot(n, t));
+            const x_n0 = normals[i0 * 3 + 0];
+            const y_n0 = normals[i0 * 3 + 1];
+            const z_n0 = normals[i0 * 3 + 2];
+
+            const x_n1 = normals[i1 * 3 + 0];
+            const y_n1 = normals[i1 * 3 + 1];
+            const z_n1 = normals[i1 * 3 + 2];
+
+            const x_n2 = normals[i2 * 3 + 0];
+            const y_n2 = normals[i2 * 3 + 1];
+            const z_n2 = normals[i2 * 3 + 2];
+
+            // Tangent
+            const n0_dot_t = x_tangent * x_n0 + y_tangent * y_n0 + z_tangent * z_n0;
+            const n1_dot_t = x_tangent * x_n1 + y_tangent * y_n1 + z_tangent * z_n1;
+            const n2_dot_t = x_tangent * x_n2 + y_tangent * y_n2 + z_tangent * z_n2;
+
+            const x_resTangent0 = x_tangent - x_n0 * n0_dot_t; 
+            const y_resTangent0 = y_tangent - y_n0 * n0_dot_t;
+            const z_resTangent0 = z_tangent - z_n0 * n0_dot_t;
+
+            const x_resTangent1 = x_tangent - x_n1 * n1_dot_t;
+            const y_resTangent1 = y_tangent - y_n1 * n1_dot_t;
+            const z_resTangent1 = z_tangent - z_n1 * n1_dot_t;
+
+            const x_resTangent2 = x_tangent - x_n2 * n2_dot_t;
+            const y_resTangent2 = y_tangent - y_n2 * n2_dot_t;
+            const z_resTangent2 = z_tangent - z_n2 * n2_dot_t;
+
+            const magTangent0 = Math.sqrt(x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0);
+            const magTangent1 = Math.sqrt(x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1);
+            const magTangent2 = Math.sqrt(x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2);
+
+            // Bitangent
+            const n0_dot_bt = x_bitangent * x_n0 + y_bitangent * y_n0 + z_bitangent * z_n0;
+            const n1_dot_bt = x_bitangent * x_n1 + y_bitangent * y_n1 + z_bitangent * z_n1;
+            const n2_dot_bt = x_bitangent * x_n2 + y_bitangent * y_n2 + z_bitangent * z_n2;
+
+            const x_resBitangent0 = x_bitangent - x_n0 * n0_dot_bt;
+            const y_resBitangent0 = y_bitangent - y_n0 * n0_dot_bt;
+            const z_resBitangent0 = z_bitangent - z_n0 * n0_dot_bt;
+
+            const x_resBitangent1 = x_bitangent - x_n1 * n1_dot_bt;
+            const y_resBitangent1 = y_bitangent - y_n1 * n1_dot_bt;
+            const z_resBitangent1 = z_bitangent - z_n1 * n1_dot_bt;
+
+            const x_resBitangent2 = x_bitangent - x_n2 * n2_dot_bt;
+            const y_resBitangent2 = y_bitangent - y_n2 * n2_dot_bt;
+            const z_resBitangent2 = z_bitangent - z_n2 * n2_dot_bt;
+
+            const magBitangent0 = Math.sqrt(x_resBitangent0 * x_resBitangent0 + y_resBitangent0 * y_resBitangent0 + z_resBitangent0 * z_resBitangent0);
+            const magBitangent1 = Math.sqrt(x_resBitangent1 * x_resBitangent1 + y_resBitangent1 * y_resBitangent1 + z_resBitangent1 * z_resBitangent1);
+            const magBitangent2 = Math.sqrt(x_resBitangent2 * x_resBitangent2 + y_resBitangent2 * y_resBitangent2 + z_resBitangent2 * z_resBitangent2);
+            
+            unpacked.tangents[i0 * 3 + 0] += x_resTangent0 / magTangent0;
+            unpacked.tangents[i0 * 3 + 1] += y_resTangent0 / magTangent0;
+            unpacked.tangents[i0 * 3 + 2] += z_resTangent0 / magTangent0;
+
+            unpacked.tangents[i1 * 3 + 0] += x_resTangent1 / magTangent1;
+            unpacked.tangents[i1 * 3 + 1] += y_resTangent1 / magTangent1;
+            unpacked.tangents[i1 * 3 + 2] += z_resTangent1 / magTangent1;
+
+            unpacked.tangents[i2 * 3 + 0] += x_resTangent2 / magTangent2;
+            unpacked.tangents[i2 * 3 + 1] += y_resTangent2 / magTangent2;
+            unpacked.tangents[i2 * 3 + 2] += z_resTangent2 / magTangent2;
+
+            unpacked.bitangents[i0 * 3 + 0] += x_resBitangent0 / magBitangent0;
+            unpacked.bitangents[i0 * 3 + 1] += y_resBitangent0 / magBitangent0;
+            unpacked.bitangents[i0 * 3 + 2] += z_resBitangent0 / magBitangent0;
+
+            unpacked.bitangents[i1 * 3 + 0] += x_resBitangent1 / magBitangent1;
+            unpacked.bitangents[i1 * 3 + 1] += y_resBitangent1 / magBitangent1;
+            unpacked.bitangents[i1 * 3 + 2] += z_resBitangent1 / magBitangent1;
+
+            unpacked.bitangents[i2 * 3 + 0] += x_resBitangent2 / magBitangent2;
+            unpacked.bitangents[i2 * 3 + 1] += y_resBitangent2 / magBitangent2;
+            unpacked.bitangents[i2 * 3 + 2] += z_resBitangent2 / magBitangent2;    
+
+            // TODO: check handedness
+        }
+        
+        this.tangents = unpacked.tangents;
+        this.bitangents = unpacked.bitangents;
+    }
+
     /**
      * @param {Layout} layout - A {@link Layout} object that describes the
      * desired memory layout of the generated buffer
