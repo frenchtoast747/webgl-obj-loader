@@ -22,6 +22,9 @@ export default class Mesh {
      *     Always use the textureStride attribute in order to determine the
      *     stride length of the texture coordinates when rendering the element
      *     array.
+     * @param {bool} options.calcTangentsAndBitangents - Calculate the tangents
+     *     and bitangents when loading of the OBJ is completed. This adds two new
+     *     attributes to the Mesh instance: `tangents` and `bitangents`.
      */
     constructor(objectData, options) {
         options = options || {};
