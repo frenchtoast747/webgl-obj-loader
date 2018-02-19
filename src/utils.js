@@ -116,6 +116,7 @@ export function downloadModels (models) {
 
     let options = {};
     options.indicesPerMaterial = !!model.indicesPerMaterial;    
+    options.calcTangentsAndBitangents = !!model.calcTangentsAndBitangents;
 
     // if the name is not provided, dervive it from the given OBJ
     let name = model.name;

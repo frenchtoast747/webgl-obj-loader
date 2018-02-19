@@ -140,4 +140,62 @@ describe('Mesh', function() {
     });
   });
 
+  describe('Test tangents and bitangent calculation', function () {
+    const data = `
+    v 0 0 0
+    v 0 1 0
+    v 1 0 0
+
+    vn 0 0 1
+
+    vt 0.0 0.0
+    vt 0.1 0.1
+
+    f 1/1/1 2/2/1 3/2/1
+    `
+
+    const m = new Mesh(data);
+    m.calculateTangentsAndBitangents();
+    const tangents = m.tangents;
+    const bitangents = m.bitangents;
+    const normals = m.vertexNormals;
+
+    it('should contain tangents, bitangents and normals with the same length', function() {
+      const normalsLength = normals.length;
+      expect(tangents).to.have.length(normalsLength);
+      expect(bitangents).to.have.length(normalsLength);
+    });
+
+    it('should contain tangents orthogonal to normals', function () {
+      let res = [];
+      for (let i = 0; i < normals.length; i += 3) {
+        const nx = normals[i + 0];
+        const ny = normals[i + 1];
+        const nz = normals[i + 2];
+
+        const tx = tangents[i + 0];
+        const ty = tangents[i + 1];
+        const tz = tangents[i + 2];
+
+        res.push(nx * tx + ny * ty + nz * tz);
+      }
+      res.every(i => expect(i).to.be.closeTo(0, 0.01));
+    });
+
+    it('should contain bitangents orthogonal to normals', function () {
+      let res = [];
+      for (let i = 0; i < normals.length; i += 3) {
+        const nx = normals[i + 0];
+        const ny = normals[i + 1];
+        const nz = normals[i + 2];
+
+        const bx = bitangents[i + 0];
+        const by = bitangents[i + 1];
+        const bz = bitangents[i + 2];
+
+        res.push(nx * bx + ny * by + nz * bz);
+      }
+      res.every(i => expect(i).to.be.closeTo(0, 0.01));
+    });
+  });
 });
