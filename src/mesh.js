@@ -298,6 +298,10 @@ export default class Mesh {
         self.materialNames = materialNamesByIndex;
         self.materialIndices = materialIndicesByName;
         self.materialsByIndex = {};
+
+        if (options.calcTangentsAndBitangents) {
+            this.calculateTangentsAndBitangents();
+        }
     }
 
     calculateTangentsAndBitangents() {
