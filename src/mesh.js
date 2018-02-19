@@ -304,6 +304,15 @@ export default class Mesh {
         }
     }
 
+    /**
+     * Calculates the tangents and bitangents of the mesh that forms an orthogonal basis together with the
+     * normal in the direction of the texture coordinates. These are useful for setting up the TBN matrix
+     * when distorting the normals through normal maps.
+     * Method derived from: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+     * 
+     * This method requires the normals and texture coordinates to be parsed and set up correctly.
+     * Adds the tangents and bitangents as members of the class instance.
+     */
     calculateTangentsAndBitangents() {
         console.assert(this.vertices && this.vertices.length &&
             this.vertexNormals && this.vertexNormals.length &&
@@ -317,7 +326,6 @@ export default class Mesh {
         let indices;
         // If sorted by material
         if (Array.isArray(this.indices[0])) {
-            debugger;
             indices = [].concat.apply([], this.indices);
         } else {
             indices = this.indices;

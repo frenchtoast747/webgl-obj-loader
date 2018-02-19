@@ -160,6 +160,12 @@ describe('Mesh', function() {
     const bitangents = m.bitangents;
     const normals = m.vertexNormals;
 
+    it('should contain tangents, bitangents and normals with the same length', function() {
+      const normalsLength = normals.length;
+      expect(tangents).to.have.length(normalsLength);
+      expect(bitangents).to.have.length(normalsLength);
+    });
+
     it('should contain tangents orthogonal to normals', function () {
       let res = [];
       for (let i = 0; i < normals.length; i += 3) {
