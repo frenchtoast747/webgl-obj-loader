@@ -186,15 +186,18 @@ export default class Mesh {
                     materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
                     // push new array into indices
                     if (options.indicesPerMaterial) {
+                        // already contains an array at index zero, don't add
                         if (materialIndicesByName[materialName] > 0) {
                             unpacked.indices.push([]);
-                            currentObjectByMaterialIndex = materialIndicesByName[materialName];
                         }
                     }
-                }
-
+                } 
                 // keep track of the current material index
                 currentMaterialIndex = materialIndicesByName[materialName];
+                // update current index array
+                if (options.indicesPerMaterial) {
+                    currentObjectByMaterialIndex = currentMaterialIndex;
+                }
             } else if (FACE_RE.test(line)) {
                 // if this is a face
                 /*
