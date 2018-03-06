@@ -45,6 +45,7 @@ function downloadMtlTextures (mtl, root) {
             let image = new Image();
             image.src = URL.createObjectURL(data);
             mapData.texture = image;
+            return new Promise(resolve => image.onload = () => Promise.resolve());
           })
           .catch(() => {
             console.error(`Unable to download texture: ${url}`);
