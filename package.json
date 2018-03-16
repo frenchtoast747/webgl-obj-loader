@@ -1,50 +1,47 @@
 {
-  "name": "webgl-obj-loader",
-  "version": "1.0.0",
-  "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
-  "main": "dist/webgl-obj-loader.min.js",
-  "scripts": {
-    "build": "webpack --config webpack.dev.js",
-    "watch": "npm run build -- -w",
-    "release": "webpack --config webpack.dev.js && webpack --config webpack.prod.js",
-    "test": "mocha --require babel-register",
-    "coverage": "nyc npm test",
-    "coverage:report": "nyc report -r html"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/frenchtoast747/webgl-obj-loader.git"
-  },
-  "keywords": [
-    "obj",
-    "mesh",
-    "load",
-    "webgl",
-    "parse",
-    "vertex",
-    "index",
-    "normal",
-    "texture"
-  ],
-  "author": "Aaron Boman",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/frenchtoast747/webgl-obj-loader/issues"
-  },
-  "homepage": "https://github.com/frenchtoast747/webgl-obj-loader",
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-3": "^6.24.1",
-    "chai": "^4.1.2",
-    "eslint": "^4.10.0",
-    "eslint-config-google": "^0.9.1",
-    "mocha": "^4.0.1",
-    "nyc": "^11.2.1",
-    "webpack": "^3.8.1",
-    "webpack-merge": "^4.1.1"
-  }
+    "name": "webgl-obj-loader",
+    "version": "1.0.2",
+    "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
+    "main": "dist/webgl-obj-loader.min.js",
+    "scripts": {
+        "build": "webpack --config webpack.dev.js",
+        "watch": "npm run build -- -w",
+        "release": "npm run prettify && webpack --config webpack.dev.js && webpack --config webpack.prod.js",
+        "test": "mocha --require babel-register",
+        "coverage": "nyc npm test",
+        "coverage:report": "nyc report -r html",
+        "prettify": "prettier --write src/**/*.js",
+        "publish": "npm publish"
+    },
+    "prettier": {
+        "printWidth": 120,
+        "tabWidth": 4
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/frenchtoast747/webgl-obj-loader.git"
+    },
+    "keywords": ["obj", "mtl", "mesh", "load", "webgl", "parse", "vertex", "index", "normal", "texture"],
+    "author": "Aaron Boman",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/frenchtoast747/webgl-obj-loader/issues"
+    },
+    "homepage": "https://github.com/frenchtoast747/webgl-obj-loader",
+    "devDependencies": {
+        "babel-core": "^6.26.0",
+        "babel-loader": "^7.1.2",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-polyfill": "^6.26.0",
+        "babel-preset-env": "^1.6.1",
+        "babel-preset-stage-3": "^6.24.1",
+        "chai": "^4.1.2",
+        "eslint": "^4.10.0",
+        "eslint-config-google": "^0.9.1",
+        "mocha": "^4.0.1",
+        "nyc": "^11.2.1",
+        "prettier": "^1.11.1",
+        "webpack": "^3.8.1",
+        "webpack-merge": "^4.1.1"
+    }
 }

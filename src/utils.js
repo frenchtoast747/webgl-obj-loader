@@ -1,63 +1,59 @@
+import Mesh from "./mesh";
+import { Material, MaterialLibrary } from "./material";
+import { Layout } from "./layout";
 
-import Mesh from './mesh';
-import {Material, MaterialLibrary} from './material';
-import {Layout} from './layout';
-
-
-function downloadMtlTextures (mtl, root) {
-  const mapAttributes = [
-    'mapDiffuse',
-    'mapAmbient',
-    'mapSpecular',
-    'mapDissolve',
-    'mapBump',
-    'mapDisplacement',
-    'mapDecal',
-    'mapEmissive',
-  ];
-  if (!root.endsWith('/')) {
-    root += '/';
-  }
-  let textures = [];
-
-  for (let material in mtl.materials) {
-    if (!mtl.materials.hasOwnProperty(material)) {
-      continue;
+function downloadMtlTextures(mtl, root) {
+    const mapAttributes = [
+        "mapDiffuse",
+        "mapAmbient",
+        "mapSpecular",
+        "mapDissolve",
+        "mapBump",
+        "mapDisplacement",
+        "mapDecal",
+        "mapEmissive"
+    ];
+    if (!root.endsWith("/")) {
+        root += "/";
     }
-    material = mtl.materials[material];
+    let textures = [];
 
-    for (let attr of mapAttributes) {
-      let mapData = material[attr];
-      if (!mapData) {
-        continue;
-      }
+    for (let material in mtl.materials) {
+        if (!mtl.materials.hasOwnProperty(material)) {
+            continue;
+        }
+        material = mtl.materials[material];
 
-      let url = root + mapData.filename;
-      textures.push(
-        fetch(url)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error()
+        for (let attr of mapAttributes) {
+            let mapData = material[attr];
+            if (!mapData) {
+                continue;
             }
-            return response.blob();
-          })
-          .then(function(data) {
-            let image = new Image();
-            image.src = URL.createObjectURL(data);
-            mapData.texture = image;
-            return new Promise(resolve => image.onload = () => Promise.resolve());
-          })
-          .catch(() => {
-            console.error(`Unable to download texture: ${url}`);
-          })
-      );
 
+            let url = root + mapData.filename;
+            textures.push(
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error();
+                        }
+                        return response.blob();
+                    })
+                    .then(function(data) {
+                        let image = new Image();
+                        image.src = URL.createObjectURL(data);
+                        mapData.texture = image;
+                        return new Promise(resolve => (image.onload = () => Promise.resolve()));
+                    })
+                    .catch(() => {
+                        console.error(`Unable to download texture: ${url}`);
+                    })
+            );
+        }
     }
-  }
 
-  return Promise.all(textures);
+    return Promise.all(textures);
 }
-
 
 /**
  * Accepts a list of model request objects and returns a Promise that
@@ -102,97 +98,92 @@ function downloadMtlTextures (mtl, root) {
  * and the value is its Mesh object. Each Mesh object will automatically
  * have its addMaterialLibrary() method called to set the given MTL data (if given).
  */
-export function downloadModels (models) {
-  const finished = [];
+export function downloadModels(models) {
+    const finished = [];
 
-  for (const model of models) {
-    const parsed = [];
+    for (const model of models) {
+        const parsed = [];
 
-    if (!model.obj) {
-      throw new Error(
-        '"obj" attribute of model object not set. The .obj file is required to be set ' +
-        'in order to use downloadModels()'
-      );
-    }
-
-    let options = {};
-    options.indicesPerMaterial = !!model.indicesPerMaterial;    
-    options.calcTangentsAndBitangents = !!model.calcTangentsAndBitangents;
-
-    // if the name is not provided, dervive it from the given OBJ
-    let name = model.name;
-    if (!name) {
-      let parts = model.obj.split('/');
-      name = parts[parts.length - 1].replace('.obj', '');
-    }
-    parsed.push(Promise.resolve(name))
-
-    parsed.push(
-      fetch(model.obj)
-        .then((response) => response.text())
-        .then((data) => {
-          return new Mesh(data, options);
-        })
-    );
-
-    // Download MaterialLibrary file?
-    if (model.mtl) {
-      let mtl = model.mtl;
-      if (typeof mtl === 'boolean') {
-        mtl = model.obj.replace(/\.obj$/, '.mtl');
-      }
-
-      parsed.push(
-        fetch(mtl)
-          .then((response) => response.text())
-          .then((data) => {
-            let material = new MaterialLibrary(data);
-            if (model.downloadMtlTextures !== false) {
-              let root = model.mtlTextureRoot;
-              if (!root) {
-                // get the directory of the MTL file as default
-                root = mtl.substr(0, mtl.lastIndexOf("/"));
-              }
-              // downloadMtlTextures returns a Promise that
-              // is resolved once all of the images it
-              // contains are downloaded. These are then
-              // attached to the map data objects
-              return Promise.all([
-                Promise.resolve(material),
-                downloadMtlTextures(material, root)
-              ]);
-            }
-            return Promise.all(Promise.resolve(material));
-          })
-          .then((value) => {
-            return value[0];
-          })
-      );
-    }
-
-    finished.push(Promise.all(parsed));
-  }
-
-  return Promise.all(finished)
-    .then((ms) => {
-      // the "finished" promise is a list of name, Mesh instance,
-      // and MaterialLibary instance. This unpacks and returns an
-      // object mapping name to Mesh (Mesh points to MTL).
-      const models = {};
-
-      for (const model of ms) {
-        const [name, mesh, mtl] = model;
-        mesh.name = name;
-        if (mtl) {
-          mesh.addMaterialLibrary(mtl);
+        if (!model.obj) {
+            throw new Error(
+                '"obj" attribute of model object not set. The .obj file is required to be set ' +
+                    "in order to use downloadModels()"
+            );
         }
-        models[name] = mesh;
-      }
 
-      return models;
+        let options = {};
+        options.indicesPerMaterial = !!model.indicesPerMaterial;
+        options.calcTangentsAndBitangents = !!model.calcTangentsAndBitangents;
+
+        // if the name is not provided, dervive it from the given OBJ
+        let name = model.name;
+        if (!name) {
+            let parts = model.obj.split("/");
+            name = parts[parts.length - 1].replace(".obj", "");
+        }
+        parsed.push(Promise.resolve(name));
+
+        parsed.push(
+            fetch(model.obj)
+                .then(response => response.text())
+                .then(data => {
+                    return new Mesh(data, options);
+                })
+        );
+
+        // Download MaterialLibrary file?
+        if (model.mtl) {
+            let mtl = model.mtl;
+            if (typeof mtl === "boolean") {
+                mtl = model.obj.replace(/\.obj$/, ".mtl");
+            }
+
+            parsed.push(
+                fetch(mtl)
+                    .then(response => response.text())
+                    .then(data => {
+                        let material = new MaterialLibrary(data);
+                        if (model.downloadMtlTextures !== false) {
+                            let root = model.mtlTextureRoot;
+                            if (!root) {
+                                // get the directory of the MTL file as default
+                                root = mtl.substr(0, mtl.lastIndexOf("/"));
+                            }
+                            // downloadMtlTextures returns a Promise that
+                            // is resolved once all of the images it
+                            // contains are downloaded. These are then
+                            // attached to the map data objects
+                            return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);
+                        }
+                        return Promise.all(Promise.resolve(material));
+                    })
+                    .then(value => {
+                        return value[0];
+                    })
+            );
+        }
+
+        finished.push(Promise.all(parsed));
+    }
+
+    return Promise.all(finished).then(ms => {
+        // the "finished" promise is a list of name, Mesh instance,
+        // and MaterialLibary instance. This unpacks and returns an
+        // object mapping name to Mesh (Mesh points to MTL).
+        const models = {};
+
+        for (const model of ms) {
+            const [name, mesh, mtl] = model;
+            mesh.name = name;
+            if (mtl) {
+                mesh.addMaterialLibrary(mtl);
+            }
+            models[name] = mesh;
+        }
+
+        return models;
     });
 }
-
 
 /**
  * Takes in an object of `mesh_name`, `'/url/to/OBJ/file'` pairs and a callback
@@ -211,45 +202,44 @@ export function downloadModels (models) {
  * @param {Object} meshes In case other meshes are loaded separately or if a previously declared variable is desired to be used, pass in a (possibly empty) json object of the pattern: { '<mesh_name>': OBJ.Mesh }
  *
  */
-export function downloadMeshes (nameAndURLs, completionCallback, meshes) {
-  if (meshes === undefined) {
-    meshes = {};
-  }
-
-  const completed = [];
-
-  for (const mesh_name in nameAndURLs) {
-    if (!nameAndURLs.hasOwnProperty(mesh_name)) {
-      continue;
+export function downloadMeshes(nameAndURLs, completionCallback, meshes) {
+    if (meshes === undefined) {
+        meshes = {};
     }
-    const url = nameAndURLs[mesh_name];
-    completed.push(
-      fetch(url)
-        .then((response) => response.text())
-        .then((data) => {
-          return [mesh_name, new Mesh(data)];
-        })
-    );
-  }
 
-  Promise.all(completed)
-    .then((ms) => {
-      for (let [name, mesh] of ms) {
-        meshes[name] = mesh;
-      }
+    const completed = [];
 
-      return completionCallback(meshes);
+    for (const mesh_name in nameAndURLs) {
+        if (!nameAndURLs.hasOwnProperty(mesh_name)) {
+            continue;
+        }
+        const url = nameAndURLs[mesh_name];
+        completed.push(
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    return [mesh_name, new Mesh(data)];
+                })
+        );
+    }
+
+    Promise.all(completed).then(ms => {
+        for (let [name, mesh] of ms) {
+            meshes[name] = mesh;
+        }
+
+        return completionCallback(meshes);
     });
 }
 
-var _buildBuffer = function( gl, type, data, itemSize ){
-  var buffer = gl.createBuffer();
-  var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
-  gl.bindBuffer(type, buffer);
-  gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
-  buffer.itemSize = itemSize;
-  buffer.numItems = data.length / itemSize;
-  return buffer;
+var _buildBuffer = function(gl, type, data, itemSize) {
+    var buffer = gl.createBuffer();
+    var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
+    gl.bindBuffer(type, buffer);
+    gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
+    buffer.itemSize = itemSize;
+    buffer.numItems = data.length / itemSize;
+    return buffer;
 };
 
 /**
@@ -326,16 +316,16 @@ var _buildBuffer = function( gl, type, data, itemSize ){
  *     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
  *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
  */
-export function initMeshBuffers ( gl, mesh ) {
-  mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
-  mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);
-  mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
-  mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
-};
+export function initMeshBuffers(gl, mesh) {
+    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
+    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);
+    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
+    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
+}
 
-export function deleteMeshBuffers ( gl, mesh ) {
-  gl.deleteBuffer(mesh.normalBuffer);
-  gl.deleteBuffer(mesh.textureBuffer);
-  gl.deleteBuffer(mesh.vertexBuffer);
-  gl.deleteBuffer(mesh.indexBuffer);
+export function deleteMeshBuffers(gl, mesh) {
+    gl.deleteBuffer(mesh.normalBuffer);
+    gl.deleteBuffer(mesh.textureBuffer);
+    gl.deleteBuffer(mesh.vertexBuffer);
+    gl.deleteBuffer(mesh.indexBuffer);
 }

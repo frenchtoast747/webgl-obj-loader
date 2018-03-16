@@ -48,19 +48,17 @@ export class Layout {
             // the type size.
             if (offset % attribute.sizeOfType !== 0) {
                 offset += attribute.sizeOfType - offset % attribute.sizeOfType;
-                console.warn('Layout requires padding before ' + attribute.key + ' attribute');
+                console.warn("Layout requires padding before " + attribute.key + " attribute");
             }
             this[attribute.key] = {
-                'attribute': attribute,
-                'size': attribute.size,
-                'type': attribute.type,
-                'normalized': attribute.normalized,
-                'offset': offset,
+                attribute: attribute,
+                size: attribute.size,
+                type: attribute.type,
+                normalized: attribute.normalized,
+                offset: offset
             };
             offset += attribute.sizeInBytes;
-            maxStrideMultiple = Math.max(
-                maxStrideMultiple,
-                attribute.sizeOfType);
+            maxStrideMultiple = Math.max(maxStrideMultiple, attribute.sizeOfType);
         }
         // Add padding to the end to satisfy WebGL's requirement that all
         // vertexAttribPointer calls have a stride that is a multiple of the
@@ -69,7 +67,7 @@ export class Layout {
         // type size.
         if (offset % maxStrideMultiple !== 0) {
             offset += maxStrideMultiple - offset % maxStrideMultiple;
-            console.warn('Layout requires padding at the back');
+            console.warn("Layout requires padding at the back");
         }
         this.stride = offset;
         for (const attribute of attributes) {
@@ -77,7 +75,6 @@ export class Layout {
         }
     }
 }
-
 
 /**
  * An exception for when two or more of the same attributes are found in the
@@ -91,7 +88,7 @@ class DuplicateAttributeException {
      *        once in the {@link Layout}
      */
     constructor(attribute) {
-        this.message = 'found duplicate attribute: ' + attribute.key;
+        this.message = "found duplicate attribute: " + attribute.key;
     }
 }
 
@@ -124,7 +121,7 @@ class Attribute {
      *        If true, unsigned integers are normalized to [0, 1].<br/>
      *        For type "FLOAT", this parameter has no effect.
      */
-    constructor(key, size, type, normalized=false) {
+    constructor(key, size, type, normalized = false) {
         this.key = key;
         this.size = size;
         this.type = type;
@@ -142,13 +139,13 @@ class Attribute {
  */
 function sizeInBytesOfType(type) {
     switch (type) {
-        case 'BYTE':
-        case 'UNSIGNED_BYTE':
+        case "BYTE":
+        case "UNSIGNED_BYTE":
             return 1;
-        case 'SHORT':
-        case 'UNSIGNED_SHORT':
+        case "SHORT":
+        case "UNSIGNED_SHORT":
             return 2;
-        case 'FLOAT':
+        case "FLOAT":
             return 4;
     }
 }
@@ -159,14 +156,14 @@ function sizeInBytesOfType(type) {
  *
  * @see {@link Layout}
  */
-Layout.POSITION = new Attribute('position', 3, 'FLOAT');
+Layout.POSITION = new Attribute("position", 3, "FLOAT");
 
 /**
  * Attribute layout to pack a vertex's normal's x, y, & z as floats
  *
  * @see {@link Layout}
  */
-Layout.NORMAL = new Attribute('normal', 3, 'FLOAT');
+Layout.NORMAL = new Attribute("normal", 3, "FLOAT");
 
 /**
  * Attribute layout to pack a vertex's normal's x, y, & z as floats.
@@ -177,7 +174,7 @@ Layout.NORMAL = new Attribute('normal', 3, 'FLOAT');
  *
  * @see {@link Layout}
  */
-Layout.TANGENT = new Attribute('tangent', 3, 'FLOAT');
+Layout.TANGENT = new Attribute("tangent", 3, "FLOAT");
 
 /**
  * Attribute layout to pack a vertex's normal's bitangent x, y, & z as floats.
@@ -187,14 +184,14 @@ Layout.TANGENT = new Attribute('tangent', 3, 'FLOAT');
  * 0, 0, 0.
  * @see {@link Layout}
  */
-Layout.BITANGENT = new Attribute('bitangent', 3, 'FLOAT');
+Layout.BITANGENT = new Attribute("bitangent", 3, "FLOAT");
 
 /**
  * Attribute layout to pack a vertex's texture coordinates' u & v as floats
  *
  * @see {@link Layout}
  */
-Layout.UV = new Attribute('uv', 2, 'FLOAT');
+Layout.UV = new Attribute("uv", 2, "FLOAT");
 
 // Material attributes
 
@@ -230,25 +227,25 @@ Layout.UV = new Attribute('uv', 2, 'FLOAT');
  *
  * @see {@link Layout}
  */
-Layout.MATERIAL_INDEX = new Attribute('materialIndex', 1, 'SHORT');
-Layout.MATERIAL_ENABLED = new Attribute('materialEnabled', 1, 'UNSIGNED_SHORT');
-Layout.AMBIENT = new Attribute('ambient', 3, 'FLOAT');
-Layout.DIFFUSE = new Attribute('diffuse', 3, 'FLOAT');
-Layout.SPECULAR = new Attribute('specular', 3, 'FLOAT');
-Layout.SPECULAR_EXPONENT = new Attribute('specularExponent', 3, 'FLOAT');
-Layout.EMISSIVE = new Attribute('emissive', 3, 'FLOAT');
-Layout.TRANSMISSION_FILTER = new Attribute('transmissionFilter', 3, 'FLOAT');
-Layout.DISSOLVE = new Attribute('dissolve', 1, 'FLOAT');
-Layout.ILLUMINATION = new Attribute('illumination', 1, 'UNSIGNED_SHORT');
-Layout.REFRACTION_INDEX = new Attribute('refractionIndex', 1, 'FLOAT');
-Layout.SHARPNESS = new Attribute('sharpness', 1, 'FLOAT');
-Layout.MAP_DIFFUSE = new Attribute('mapDiffuse', 1, 'SHORT');
-Layout.MAP_AMBIENT = new Attribute('mapAmbient', 1, 'SHORT');
-Layout.MAP_SPECULAR = new Attribute('mapSpecular', 1, 'SHORT');
-Layout.MAP_SPECULAR_EXPONENT = new Attribute('mapSpecularExponent', 1, 'SHORT');
-Layout.MAP_DISSOLVE = new Attribute('mapDissolve', 1, 'SHORT');
-Layout.ANTI_ALIASING = new Attribute('antiAliasing', 1, 'UNSIGNED_SHORT');
-Layout.MAP_BUMP = new Attribute('mapBump', 1, 'SHORT');
-Layout.MAP_DISPLACEMENT = new Attribute('mapDisplacement', 1, 'SHORT');
-Layout.MAP_DECAL = new Attribute('mapDecal', 1, 'SHORT');
-Layout.MAP_EMISSIVE = new Attribute('mapEmissive', 1, 'SHORT');
+Layout.MATERIAL_INDEX = new Attribute("materialIndex", 1, "SHORT");
+Layout.MATERIAL_ENABLED = new Attribute("materialEnabled", 1, "UNSIGNED_SHORT");
+Layout.AMBIENT = new Attribute("ambient", 3, "FLOAT");
+Layout.DIFFUSE = new Attribute("diffuse", 3, "FLOAT");
+Layout.SPECULAR = new Attribute("specular", 3, "FLOAT");
+Layout.SPECULAR_EXPONENT = new Attribute("specularExponent", 3, "FLOAT");
+Layout.EMISSIVE = new Attribute("emissive", 3, "FLOAT");
+Layout.TRANSMISSION_FILTER = new Attribute("transmissionFilter", 3, "FLOAT");
+Layout.DISSOLVE = new Attribute("dissolve", 1, "FLOAT");
+Layout.ILLUMINATION = new Attribute("illumination", 1, "UNSIGNED_SHORT");
+Layout.REFRACTION_INDEX = new Attribute("refractionIndex", 1, "FLOAT");
+Layout.SHARPNESS = new Attribute("sharpness", 1, "FLOAT");
+Layout.MAP_DIFFUSE = new Attribute("mapDiffuse", 1, "SHORT");
+Layout.MAP_AMBIENT = new Attribute("mapAmbient", 1, "SHORT");
+Layout.MAP_SPECULAR = new Attribute("mapSpecular", 1, "SHORT");
+Layout.MAP_SPECULAR_EXPONENT = new Attribute("mapSpecularExponent", 1, "SHORT");
+Layout.MAP_DISSOLVE = new Attribute("mapDissolve", 1, "SHORT");
+Layout.ANTI_ALIASING = new Attribute("antiAliasing", 1, "UNSIGNED_SHORT");
+Layout.MAP_BUMP = new Attribute("mapBump", 1, "SHORT");
+Layout.MAP_DISPLACEMENT = new Attribute("mapDisplacement", 1, "SHORT");
+Layout.MAP_DECAL = new Attribute("mapDecal", 1, "SHORT");
+Layout.MAP_EMISSIVE = new Attribute("mapEmissive", 1, "SHORT");
