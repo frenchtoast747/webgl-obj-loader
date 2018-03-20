@@ -243,7 +243,7 @@ http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
-**1.0.2**
+**1.1.0**
 * Add Support for separating mesh indices by materials.
 * Add calculation for tangents and bitangents
 * Add runtime OBJ library version.
