@@ -1,12 +1,13 @@
 {
     "name": "webgl-obj-loader",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
     "main": "dist/webgl-obj-loader.min.js",
     "scripts": {
         "build": "webpack --config webpack.dev.js",
         "watch": "npm run build -- -w",
-        "release": "npm run prettify && webpack --config webpack.dev.js && webpack --config webpack.prod.js",
+        "release":
+            "npm run prettify && npm run test && webpack --config webpack.dev.js && webpack --config webpack.prod.js",
         "test": "mocha --require babel-register",
         "coverage": "nyc npm test",
         "coverage:report": "nyc report -r html",
