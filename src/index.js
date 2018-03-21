@@ -3,7 +3,7 @@ import { Material, MaterialLibrary } from "./material";
 import { Layout } from "./layout";
 import { downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers } from "./utils";
 
-const version = "1.1.2";
+const version = "1.1.3";
 
 /**
  * @namespace
