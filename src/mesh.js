@@ -166,7 +166,7 @@ export default class Mesh {
                 // support is enabled, then the texture coordinate is
                 // expected to have three values in it.
                 if (elements.length > 2 && !options.enableWTextureCoord) {
-                    coords = elements.slice(0, 1);
+                    coords = elements.slice(0, 2);
                 } else if (elements.length === 2 && options.enableWTextureCoord) {
                     // If for some reason W texture coordinate support is enabled
                     // and only the U and V coordinates are given, then we supply
