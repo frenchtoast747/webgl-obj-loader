@@ -528,7 +528,7 @@ export default class Mesh {
                         break;
                     case Layout.UV.key:
                         dataView.setFloat32(offset, this.textures[i * 2], true);
-                        dataView.setFloat32(offset + 4, this.vertices[i * 2 + 1], true);
+                        dataView.setFloat32(offset + 4, this.textures[i * 2 + 1], true);
                         break;
                     case Layout.NORMAL.key:
                         dataView.setFloat32(offset, this.vertexNormals[i * 3], true);
