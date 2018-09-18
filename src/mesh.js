@@ -1,4 +1,4 @@
-import { Layout } from "./layout";
+import { Layout } from "./layout.js";
 
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data

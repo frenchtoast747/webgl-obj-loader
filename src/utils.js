@@ -1,6 +1,6 @@
-import Mesh from "./mesh";
-import { Material, MaterialLibrary } from "./material";
-import { Layout } from "./layout";
+import Mesh from "./mesh.js";
+import { Material, MaterialLibrary } from "./material.js";
+import { Layout } from "./layout.js";
 
 function downloadMtlTextures(mtl, root) {
     const mapAttributes = [
