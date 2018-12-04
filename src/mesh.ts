@@ -1,4 +1,37 @@
-import { Layout } from "./layout.js";
+import { Layout } from "./layout";
+import { Material, MaterialLibrary } from "./material";
+
+export interface MeshOptions {
+    enableWTextureCoord?: boolean;
+    calcTangentsAndBitangents?: boolean;
+    materials?: { [key: string]: Material };
+}
+
+interface UnpackedAttrs {
+    verts: number[];
+    norms: number[];
+    textures: number[];
+    hashindices: { [k: string]: number };
+    indices: number[][];
+    materialIndices: number[];
+    index: number;
+}
+
+export interface MaterialNameToIndex {
+    [k: string]: number;
+}
+
+export interface IndexToMaterial {
+    [k: number]: Material;
+}
+
+export interface ArrayBufferWithItemSize extends ArrayBuffer {
+    numItems?: number;
+}
+
+export interface Uint16ArrayWithItemSize extends Uint16Array {
+    numItems?: number;
+}
 
 /**
  * The main Mesh class. The constructor will parse through the OBJ file data
@@ -7,6 +40,20 @@ import { Layout } from "./layout.js";
  * OBJ.initMeshBuffers for an example of how to use the newly created Mesh
  */
 export default class Mesh {
+    public vertices: number[];
+    public vertexNormals: number[];
+    public textures: number[];
+    public indices: number[];
+    public name: string = "";
+    public vertexMaterialIndices: number[];
+    public indicesPerMaterial: number[][] = [];
+    public materialNames: string[];
+    public materialIndices: MaterialNameToIndex;
+    public materialsByIndex: IndexToMaterial = {};
+    public tangents: number[] = [];
+    public bitangents: number[] = [];
+    public textureStride: number;
+
     /**
      * Create a Mesh
      * @param {String} objectData - a string representation of an OBJ file with
@@ -26,20 +73,17 @@ export default class Mesh {
      *     and bitangents when loading of the OBJ is completed. This adds two new
      *     attributes to the Mesh instance: `tangents` and `bitangents`.
      */
-    constructor(objectData, options) {
+    constructor(objectData: string, options?: MeshOptions) {
         options = options || {};
         options.materials = options.materials || {};
         options.enableWTextureCoord = !!options.enableWTextureCoord;
-        options.indicesPerMaterial = !!options.indicesPerMaterial;
 
-        let self = this;
         // the list of unique vertex, normal, texture, attributes
-        self.vertices = [];
-        self.vertexNormals = [];
-        self.textures = [];
+        this.vertexNormals = [];
+        this.textures = [];
         // the indicies to draw the faces
-        self.indices = [];
-        self.textureStride = options.enableWTextureCoord ? 3 : 2;
+        this.indices = [];
+        this.textureStride = options.enableWTextureCoord ? 3 : 2;
 
         /*
         The OBJ file format does a sort of compression when saving a model in a
@@ -114,25 +158,24 @@ export default class Mesh {
         exists in the hashindices object, its corresponding value is the index of
         that group and is appended to the unpacked indices array.
        */
-        this.name = "";
         const verts = [];
         const vertNormals = [];
         const textures = [];
-        const unpacked = {};
         const materialNamesByIndex = [];
-        const materialIndicesByName = {};
+        const materialIndicesByName: MaterialNameToIndex = {};
         // keep track of what material we've seen last
         let currentMaterialIndex = -1;
-        // keep track if pushing indices by materials - otherwise not used
         let currentObjectByMaterialIndex = 0;
         // unpacking stuff
-        unpacked.verts = [];
-        unpacked.norms = [];
-        unpacked.textures = [];
-        unpacked.hashindices = {};
-        unpacked.indices = [[]];
-        unpacked.materialIndices = [];
-        unpacked.index = 0;
+        const unpacked: UnpackedAttrs = {
+            verts: [],
+            norms: [],
+            textures: [],
+            hashindices: {},
+            indices: [[]],
+            materialIndices: [],
+            index: 0,
+        };
 
         const VERTEX_RE = /^v\s/;
         const NORMAL_RE = /^vn\s/;
@@ -144,8 +187,8 @@ export default class Mesh {
         // array of lines separated by the newline
         const lines = objectData.split("\n");
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
+        for (let line of lines) {
+            line = line.trim();
             if (!line || line.startsWith("#")) {
                 continue;
             }
@@ -172,7 +215,7 @@ export default class Mesh {
                     // and only the U and V coordinates are given, then we supply
                     // the default value of 0 so that the stride length is correct
                     // when the textures are unpacked below.
-                    coords.push(0);
+                    coords.push("0");
                 }
                 textures.push(...coords);
             } else if (USE_MATERIAL_RE.test(line)) {
@@ -184,19 +227,15 @@ export default class Mesh {
                     materialNamesByIndex.push(materialName);
                     materialIndicesByName[materialName] = materialNamesByIndex.length - 1;
                     // push new array into indices
-                    if (options.indicesPerMaterial) {
-                        // already contains an array at index zero, don't add
-                        if (materialIndicesByName[materialName] > 0) {
-                            unpacked.indices.push([]);
-                        }
+                    // already contains an array at index zero, don't add
+                    if (materialIndicesByName[materialName] > 0) {
+                        unpacked.indices.push([]);
                     }
                 }
                 // keep track of the current material index
                 currentMaterialIndex = materialIndicesByName[materialName];
                 // update current index array
-                if (options.indicesPerMaterial) {
-                    currentObjectByMaterialIndex = currentMaterialIndex;
-                }
+                currentObjectByMaterialIndex = currentMaterialIndex;
             } else if (FACE_RE.test(line)) {
                 // if this is a face
                 /*
@@ -237,12 +276,12 @@ export default class Mesh {
                          Think of faces having Vertices which are comprised of the
                          attributes location (v), texture (vt), and normal (vn).
                          */
-                        let vertex = elements[j].split("/");
+                        const vertex = elements[j].split("/");
                         // it's possible for faces to only specify the vertex
                         // and the normal. In this case, vertex will only have
                         // a length of 2 and not 3 and the normal will be the
                         // second item in the list with an index of 1.
-                        let normalIndex = vertex.length - 1;
+                        const normalIndex = vertex.length - 1;
                         /*
                          The verts, textures, and vertNormals arrays each contain a
                          flattend array of coordinates.
@@ -263,22 +302,22 @@ export default class Mesh {
                          This same process is repeated for verts and textures.
                          */
                         // Vertex position
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 0]);
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 1]);
-                        unpacked.verts.push(+verts[(vertex[0] - 1) * 3 + 2]);
+                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);
+                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
+                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
                         // Vertex textures
                         if (textures.length) {
-                            let stride = options.enableWTextureCoord ? 3 : 2;
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 0]);
-                            unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 1]);
+                            const stride = options.enableWTextureCoord ? 3 : 2;
+                            unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);
+                            unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);
                             if (options.enableWTextureCoord) {
-                                unpacked.textures.push(+textures[(vertex[1] - 1) * stride + 2]);
+                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);
                             }
                         }
                         // Vertex normals
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 0]);
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 1]);
-                        unpacked.norms.push(+vertNormals[(vertex[normalIndex] - 1) * 3 + 2]);
+                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);
+                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);
+                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);
                         // Vertex material indices
                         unpacked.materialIndices.push(currentMaterialIndex);
                         // add the newly created Vertex to the list of indices
@@ -294,15 +333,16 @@ export default class Mesh {
                 }
             }
         }
-        self.vertices = unpacked.verts;
-        self.vertexNormals = unpacked.norms;
-        self.textures = unpacked.textures;
-        self.vertexMaterialIndices = unpacked.materialIndices;
-        self.indices = options.indicesPerMaterial ? unpacked.indices : unpacked.indices[currentObjectByMaterialIndex];
+        this.vertices = unpacked.verts;
+        this.vertexNormals = unpacked.norms;
+        this.textures = unpacked.textures;
+        this.vertexMaterialIndices = unpacked.materialIndices;
+        this.indices = unpacked.indices[currentObjectByMaterialIndex];
+        this.indicesPerMaterial = unpacked.indices;
 
-        self.materialNames = materialNamesByIndex;
-        self.materialIndices = materialIndicesByName;
-        self.materialsByIndex = {};
+        this.materialNames = materialNamesByIndex;
+        this.materialIndices = materialIndicesByName;
+        this.materialsByIndex = {};
 
         if (options.calcTangentsAndBitangents) {
             this.calculateTangentsAndBitangents();
@@ -320,28 +360,24 @@ export default class Mesh {
      */
     calculateTangentsAndBitangents() {
         console.assert(
-            this.vertices &&
+            !!(
+                this.vertices &&
                 this.vertices.length &&
                 this.vertexNormals &&
                 this.vertexNormals.length &&
                 this.textures &&
-                this.textures.length,
-            "Missing attributes for calculating tangents and bitangents"
+                this.textures.length
+            ),
+            "Missing attributes for calculating tangents and bitangents",
         );
 
-        const unpacked = {};
-        unpacked.tangents = [...new Array(this.vertices.length)].map(v => 0);
-        unpacked.bitangents = [...new Array(this.vertices.length)].map(v => 0);
+        const unpacked = {
+            tangents: [...new Array(this.vertices.length)].map(_ => 0),
+            bitangents: [...new Array(this.vertices.length)].map(_ => 0),
+        };
 
         // Loop through all faces in the whole mesh
-        let indices;
-        // If sorted by material
-        if (Array.isArray(this.indices[0])) {
-            indices = [].concat.apply([], this.indices);
-        } else {
-            indices = this.indices;
-        }
-
+        const indices = this.indices;
         const vertices = this.vertices;
         const normals = this.vertexNormals;
         const uvs = this.textures;
@@ -387,7 +423,7 @@ export default class Mesh {
             const y_uvDeltaPos2 = y_uv2 - y_uv0;
 
             const rInv = x_uvDeltaPos1 * y_uvDeltaPos2 - y_uvDeltaPos1 * x_uvDeltaPos2;
-            const r = 1.0 / (Math.abs(rInv < 0.0001) ? 1.0 : rInv);
+            const r = 1.0 / Math.abs(rInv < 0.0001 ? 1.0 : rInv);
 
             // Tangent
             const x_tangent = (x_deltaPos1 * y_uvDeltaPos2 - x_deltaPos2 * y_uvDeltaPos1) * r;
@@ -431,13 +467,13 @@ export default class Mesh {
             const z_resTangent2 = z_tangent - z_n2 * n2_dot_t;
 
             const magTangent0 = Math.sqrt(
-                x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0
+                x_resTangent0 * x_resTangent0 + y_resTangent0 * y_resTangent0 + z_resTangent0 * z_resTangent0,
             );
             const magTangent1 = Math.sqrt(
-                x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1
+                x_resTangent1 * x_resTangent1 + y_resTangent1 * y_resTangent1 + z_resTangent1 * z_resTangent1,
             );
             const magTangent2 = Math.sqrt(
-                x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2
+                x_resTangent2 * x_resTangent2 + y_resTangent2 * y_resTangent2 + z_resTangent2 * z_resTangent2,
             );
 
             // Bitangent
@@ -460,17 +496,17 @@ export default class Mesh {
             const magBitangent0 = Math.sqrt(
                 x_resBitangent0 * x_resBitangent0 +
                     y_resBitangent0 * y_resBitangent0 +
-                    z_resBitangent0 * z_resBitangent0
+                    z_resBitangent0 * z_resBitangent0,
             );
             const magBitangent1 = Math.sqrt(
                 x_resBitangent1 * x_resBitangent1 +
                     y_resBitangent1 * y_resBitangent1 +
-                    z_resBitangent1 * z_resBitangent1
+                    z_resBitangent1 * z_resBitangent1,
             );
             const magBitangent2 = Math.sqrt(
                 x_resBitangent2 * x_resBitangent2 +
                     y_resBitangent2 * y_resBitangent2 +
-                    z_resBitangent2 * z_resBitangent2
+                    z_resBitangent2 * z_resBitangent2,
             );
 
             unpacked.tangents[i0 * 3 + 0] += x_resTangent0 / magTangent0;
@@ -505,13 +541,13 @@ export default class Mesh {
     }
 
     /**
-     * @param {Layout} layout - A {@link Layout} object that describes the
+     * @param layout - A {@link Layout} object that describes the
      * desired memory layout of the generated buffer
-     * @return {ArrayBuffer} The packed array in the ... TODO
+     * @return The packed array in the ... TODO
      */
-    makeBufferData(layout) {
+    makeBufferData(layout: Layout): ArrayBufferWithItemSize {
         const numItems = this.vertices.length / 3;
-        const buffer = new ArrayBuffer(layout.stride * numItems);
+        const buffer: ArrayBufferWithItemSize = new ArrayBuffer(layout.stride * numItems);
         buffer.numItems = numItems;
         const dataView = new DataView(buffer);
         for (let i = 0, vertexOffset = 0; i < numItems; i++) {
@@ -519,7 +555,7 @@ export default class Mesh {
             // copy in the vertex data in the order and format given by the
             // layout param
             for (const attribute of layout.attributes) {
-                const offset = vertexOffset + layout[attribute.key].offset;
+                const offset = vertexOffset + layout.attributeMap[attribute.key].offset;
                 switch (attribute.key) {
                     case Layout.POSITION.key:
                         dataView.setFloat32(offset, this.vertices[i * 3], true);
@@ -545,7 +581,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -561,7 +597,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -577,7 +613,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -593,7 +629,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -607,7 +643,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -623,7 +659,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -639,7 +675,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -653,7 +689,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -667,7 +703,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -681,7 +717,7 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
@@ -695,11 +731,11 @@ export default class Mesh {
                             console.warn(
                                 'Material "' +
                                     this.materialNames[materialIndex] +
-                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"'
+                                    '" not found in mesh. Did you forget to call addMaterialLibrary(...)?"',
                             );
                             break;
                         }
-                        dataView.setInt16(offset, material.antiAliasing, true);
+                        dataView.setInt16(offset, material.antiAliasing ? 1 : 0, true);
                         break;
                     }
                 }
@@ -708,13 +744,13 @@ export default class Mesh {
         return buffer;
     }
 
-    makeIndexBufferData() {
-        const buffer = new Uint16Array(this.indices);
+    makeIndexBufferData(): Uint16ArrayWithItemSize {
+        const buffer: Uint16ArrayWithItemSize = new Uint16Array(this.indices);
         buffer.numItems = this.indices.length;
         return buffer;
     }
 
-    addMaterialLibrary(mtl) {
+    addMaterialLibrary(mtl: MaterialLibrary) {
         for (const name in mtl.materials) {
             if (!(name in this.materialIndices)) {
                 // This material is not referenced by the mesh

@@ -243,6 +243,13 @@ http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
+**2.0.0**
+* Updated to TypeScript
+* Breaking change: the Mesh option `indicesPerMaterial` has been removed in favor of always providing the indices per material.
+  * Instead of `mesh.indices` holding an array of arrays of numbers, `mesh.indicesPerMaterial` will now hold the indices where the top
+    level array index is the index of the material and the inner arrays are the indices for that material.
+* Breaking change: the Layout class has changed from directly applying attributes to the Layout instance to creating an attributeMap
+
 **1.1.0**
 * Add Support for separating mesh indices by materials.
 * Add calculation for tangents and bitangents

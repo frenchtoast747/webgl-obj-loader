@@ -1,8 +1,7 @@
-import Mesh from "./mesh.js";
-import { Material, MaterialLibrary } from "./material.js";
-import { Layout } from "./layout.js";
+import Mesh from "./mesh";
+import { MaterialLibrary, TextureMapData } from "./material";
 
-function downloadMtlTextures(mtl, root) {
+function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
     const mapAttributes = [
         "mapDiffuse",
         "mapAmbient",
@@ -11,26 +10,26 @@ function downloadMtlTextures(mtl, root) {
         "mapBump",
         "mapDisplacement",
         "mapDecal",
-        "mapEmissive"
+        "mapEmissive",
     ];
     if (!root.endsWith("/")) {
         root += "/";
     }
-    let textures = [];
+    const textures = [];
 
-    for (let material in mtl.materials) {
-        if (!mtl.materials.hasOwnProperty(material)) {
+    for (const materialName in mtl.materials) {
+        if (!mtl.materials.hasOwnProperty(materialName)) {
             continue;
         }
-        material = mtl.materials[material];
+        const material = mtl.materials[materialName];
 
-        for (let attr of mapAttributes) {
-            let mapData = material[attr];
+        for (const attr of mapAttributes) {
+            const mapData = (material as any)[attr] as TextureMapData;
             if (!mapData) {
                 continue;
             }
 
-            let url = root + mapData.filename;
+            const url = root + mapData.filename;
             textures.push(
                 fetch(url)
                     .then(response => {
@@ -40,14 +39,14 @@ function downloadMtlTextures(mtl, root) {
                         return response.blob();
                     })
                     .then(function(data) {
-                        let image = new Image();
+                        const image = new Image();
                         image.src = URL.createObjectURL(data);
                         mapData.texture = image;
                         return new Promise(resolve => (image.onload = resolve));
                     })
                     .catch(() => {
                         console.error(`Unable to download texture: ${url}`);
-                    })
+                    }),
             );
         }
     }
@@ -55,6 +54,26 @@ function downloadMtlTextures(mtl, root) {
     return Promise.all(textures);
 }
 
+function getMtl(modelOptions: DownloadModelsOptions): string {
+    if (!(typeof modelOptions.mtl === "string")) {
+        return modelOptions.obj.replace(/\.obj$/, ".mtl");
+    }
+
+    return modelOptions.mtl;
+}
+
+export interface DownloadModelsOptions {
+    obj: string;
+    mtl: boolean | string;
+    downloadMtlTextures: boolean;
+    mtlTextureRoot: string;
+    name: string;
+    indicesPerMaterial: boolean;
+    calcTangentsAndBitangents: boolean;
+}
+
+type ModelPromises = [Promise<string>, Promise<Mesh>, undefined | Promise<MaterialLibrary>];
+export type MeshMap = { [name: string]: Mesh };
 /**
  * Accepts a list of model request objects and returns a Promise that
  * resolves when all models have been downloaded and parsed.
@@ -98,51 +117,45 @@ function downloadMtlTextures(mtl, root) {
  * and the value is its Mesh object. Each Mesh object will automatically
  * have its addMaterialLibrary() method called to set the given MTL data (if given).
  */
-export function downloadModels(models) {
+export function downloadModels(models: DownloadModelsOptions[]): Promise<MeshMap> {
     const finished = [];
 
     for (const model of models) {
-        const parsed = [];
-
         if (!model.obj) {
             throw new Error(
                 '"obj" attribute of model object not set. The .obj file is required to be set ' +
-                    "in order to use downloadModels()"
+                    "in order to use downloadModels()",
             );
         }
 
-        let options = {};
-        options.indicesPerMaterial = !!model.indicesPerMaterial;
-        options.calcTangentsAndBitangents = !!model.calcTangentsAndBitangents;
+        const options = {
+            indicesPerMaterial: !!model.indicesPerMaterial,
+            calcTangentsAndBitangents: !!model.calcTangentsAndBitangents,
+        };
 
         // if the name is not provided, dervive it from the given OBJ
         let name = model.name;
         if (!name) {
-            let parts = model.obj.split("/");
+            const parts = model.obj.split("/");
             name = parts[parts.length - 1].replace(".obj", "");
         }
-        parsed.push(Promise.resolve(name));
+        const namePromise = Promise.resolve(name);
 
-        parsed.push(
-            fetch(model.obj)
-                .then(response => response.text())
-                .then(data => {
-                    return new Mesh(data, options);
-                })
-        );
+        const meshPromise = fetch(model.obj)
+            .then(response => response.text())
+            .then(data => {
+                return new Mesh(data, options);
+            });
 
+        let mtlPromise;
         // Download MaterialLibrary file?
         if (model.mtl) {
-            let mtl = model.mtl;
-            if (typeof mtl === "boolean") {
-                mtl = model.obj.replace(/\.obj$/, ".mtl");
-            }
-
-            parsed.push(
-                fetch(mtl)
-                    .then(response => response.text())
-                    .then(data => {
-                        let material = new MaterialLibrary(data);
+            const mtl = getMtl(model);
+            mtlPromise = fetch(mtl)
+                .then(response => response.text())
+                .then(
+                    (data: string): Promise<[MaterialLibrary, any]> => {
+                        const material = new MaterialLibrary(data);
                         if (model.downloadMtlTextures !== false) {
                             let root = model.mtlTextureRoot;
                             if (!root) {
@@ -155,22 +168,23 @@ export function downloadModels(models) {
                             // attached to the map data objects
                             return Promise.all([Promise.resolve(material), downloadMtlTextures(material, root)]);
                         }
-                        return Promise.all(Promise.resolve(material));
-                    })
-                    .then(value => {
-                        return value[0];
-                    })
-            );
+                        return Promise.all([Promise.resolve(material), undefined]);
+                    },
+                )
+                .then((value: [MaterialLibrary, any]) => {
+                    return value[0];
+                });
         }
 
-        finished.push(Promise.all(parsed));
+        const parsed: ModelPromises = [namePromise, meshPromise, mtlPromise];
+        finished.push(Promise.all<string, Mesh, MaterialLibrary | undefined>(parsed));
     }
 
     return Promise.all(finished).then(ms => {
         // the "finished" promise is a list of name, Mesh instance,
         // and MaterialLibary instance. This unpacks and returns an
         // object mapping name to Mesh (Mesh points to MTL).
-        const models = {};
+        const models: MeshMap = {};
 
         for (const model of ms) {
             const [name, mesh, mtl] = model;
@@ -183,6 +197,10 @@ export function downloadModels(models) {
 
         return models;
     });
+}
+
+export interface NameAndUrls {
+    [meshName: string]: string;
 }
 
 /**
@@ -202,12 +220,16 @@ export function downloadModels(models) {
  * @param {Object} meshes In case other meshes are loaded separately or if a previously declared variable is desired to be used, pass in a (possibly empty) json object of the pattern: { '<mesh_name>': OBJ.Mesh }
  *
  */
-export function downloadMeshes(nameAndURLs, completionCallback, meshes) {
+export function downloadMeshes(
+    nameAndURLs: NameAndUrls,
+    completionCallback: (meshes: MeshMap) => void,
+    meshes: MeshMap,
+) {
     if (meshes === undefined) {
         meshes = {};
     }
 
-    const completed = [];
+    const completed: Promise<[string, Mesh]>[] = [];
 
     for (const mesh_name in nameAndURLs) {
         if (!nameAndURLs.hasOwnProperty(mesh_name)) {
@@ -218,13 +240,13 @@ export function downloadMeshes(nameAndURLs, completionCallback, meshes) {
             fetch(url)
                 .then(response => response.text())
                 .then(data => {
-                    return [mesh_name, new Mesh(data)];
-                })
+                    return [mesh_name, new Mesh(data)] as [string, Mesh];
+                }),
         );
     }
 
     Promise.all(completed).then(ms => {
-        for (let [name, mesh] of ms) {
+        for (const [name, mesh] of ms) {
             meshes[name] = mesh;
         }
 
@@ -232,15 +254,27 @@ export function downloadMeshes(nameAndURLs, completionCallback, meshes) {
     });
 }
 
-var _buildBuffer = function(gl, type, data, itemSize) {
-    var buffer = gl.createBuffer();
-    var arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
+export interface ExtendedGLBuffer extends WebGLBuffer {
+    itemSize: number;
+    numItems: number;
+}
+
+function _buildBuffer(gl: WebGLRenderingContext, type: GLenum, data: number[], itemSize: number): ExtendedGLBuffer {
+    const buffer = gl.createBuffer() as ExtendedGLBuffer;
+    const arrayView = type === gl.ARRAY_BUFFER ? Float32Array : Uint16Array;
     gl.bindBuffer(type, buffer);
     gl.bufferData(type, new arrayView(data), gl.STATIC_DRAW);
     buffer.itemSize = itemSize;
     buffer.numItems = data.length / itemSize;
     return buffer;
-};
+}
+
+export interface MeshWithBuffers extends Mesh {
+    normalBuffer: ExtendedGLBuffer;
+    textureBuffer: ExtendedGLBuffer;
+    vertexBuffer: ExtendedGLBuffer;
+    indexBuffer: ExtendedGLBuffer;
+}
 
 /**
  * Takes in the WebGL context and a Mesh, then creates and appends the buffers
@@ -271,10 +305,10 @@ var _buildBuffer = function(gl, type, data, itemSize) {
  *
  * A simple example (a lot of steps are missing, so don't copy and paste):
  *
- *     var gl   = canvas.getContext('webgl'),
+ *     const gl   = canvas.getContext('webgl'),
  *         mesh = OBJ.Mesh(obj_file_data);
  *     // compile the shaders and create a shader program
- *     var shaderProgram = gl.createProgram();
+ *     const shaderProgram = gl.createProgram();
  *     // compilation stuff here
  *     ...
  *     // make sure you have vertex, vertex normal, and texture coordinate
@@ -316,14 +350,16 @@ var _buildBuffer = function(gl, type, data, itemSize) {
  *     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.mesh.indexBuffer);
  *     gl.drawElements(gl.TRIANGLES, model.mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
  */
-export function initMeshBuffers(gl, mesh) {
-    mesh.normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
-    mesh.textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);
-    mesh.vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
-    mesh.indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
+export function initMeshBuffers(gl: WebGLRenderingContext, mesh: Mesh): MeshWithBuffers {
+    (mesh as MeshWithBuffers).normalBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertexNormals, 3);
+    (mesh as MeshWithBuffers).textureBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.textures, mesh.textureStride);
+    (mesh as MeshWithBuffers).vertexBuffer = _buildBuffer(gl, gl.ARRAY_BUFFER, mesh.vertices, 3);
+    (mesh as MeshWithBuffers).indexBuffer = _buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, mesh.indices, 1);
+
+    return mesh as MeshWithBuffers;
 }
 
-export function deleteMeshBuffers(gl, mesh) {
+export function deleteMeshBuffers(gl: WebGLRenderingContext, mesh: MeshWithBuffers) {
     gl.deleteBuffer(mesh.normalBuffer);
     gl.deleteBuffer(mesh.textureBuffer);
     gl.deleteBuffer(mesh.vertexBuffer);

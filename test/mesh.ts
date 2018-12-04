@@ -1,13 +1,13 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 
 import Mesh from '../src/mesh';
 
 
-describe('Mesh', function() {
-  describe('Test vertex parsing', function() {
-    it('should contain the x, y, and z coordinates', function() {
-        const m = new Mesh(
-          `
+describe('Mesh', function () {
+  describe('Test vertex parsing', function () {
+    it('should contain the x, y, and z coordinates', function () {
+      const m = new Mesh(
+        `
           v 0 0 0
           v 1.0 0 0
           v -1.0000 -1 0
@@ -15,17 +15,17 @@ describe('Mesh', function() {
           # for vertices to be populated
           f 1 2 3
           `
-        );
-        expect(m.vertices).to.deep.equal([
-          0, 0, 0,
-          1, 0, 0,
-          -1, -1, 0
-        ]);
+      );
+      expect(m.vertices).to.deep.equal([
+        0, 0, 0,
+        1, 0, 0,
+        -1, -1, 0
+      ]);
     });
   });
 
-  describe('Test vertex normal parsing', function(){
-    it('should contain the x, y, and z vector components', function() {
+  describe('Test vertex normal parsing', function () {
+    it('should contain the x, y, and z vector components', function () {
       const m = new Mesh(
         `
         # including a single vertex so that the face
@@ -46,8 +46,8 @@ describe('Mesh', function() {
     });
   });
 
-  describe('Test vertex texture parsing', function(){
-    it('should contain the u and v texture coordinates', function() {
+  describe('Test vertex texture parsing', function () {
+    it('should contain the u and v texture coordinates', function () {
       const m = new Mesh(
         `
         # including a single vertex and a single vertex normal so
@@ -68,7 +68,7 @@ describe('Mesh', function() {
       ]);
     });
 
-    it('should contain the u, v, and w texture coordinates', function() {
+    it('should contain the u, v, and w texture coordinates', function () {
       const m = new Mesh(
         `
         # including a single vertex and a single vertex normal so
@@ -85,14 +85,14 @@ describe('Mesh', function() {
         }
       );
       expect(m.textures).to.deep.equal([
-           0, 0.456, 0.5,
-           1,     1,   0,
-        -1.1,    -1,   1
+        0, 0.456, 0.5,
+        1, 1, 0,
+        -1.1, -1, 1
       ]);
     });
   });
 
-  describe('Test face parsing', function(){
+  describe('Test face parsing', function () {
     const data = `
     v 0 0 0
     v 1 1 1
@@ -109,27 +109,27 @@ describe('Mesh', function() {
     vt 0.2 0.2
     vt 0.3 0.3
     `
-    it('should contain the unique vertex triplets and their indices', function() {
+    it('should contain the unique vertex triplets and their indices', function () {
       let meshData = data + `
       f 1/1/1 2/2/2 3/3/3
       f 2/2/2 3/3/3 4/4/4
       `
       const m = new Mesh(meshData);
       expect(m.vertices).to.deep.equal([
-        0, 0, 0,  1, 1, 1,  2, 2, 2,  3, 3, 3,
+        0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3,
       ]);
       expect(m.vertexNormals).to.deep.equal([
-        0, 0, 0,  1, 1, 1,  2, 2, 2,  3, 3, 3,
+        0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3,
       ]);
       expect(m.textures).to.deep.equal([
-        0.0, 0.0,  0.1, 0.1,  0.2, 0.2,  0.3, 0.3,
+        0.0, 0.0, 0.1, 0.1, 0.2, 0.2, 0.3, 0.3,
       ]);
       expect(m.indices).to.deep.equal([
         0, 1, 2, 1, 2, 3
       ]);
     });
 
-    it('should contain the proper index order when parsing quads', function() {
+    it('should contain the proper index order when parsing quads', function () {
       let meshData = data + `
       f 1/1/1 2/2/2 3/3/3 4/4/4
       `
@@ -160,7 +160,7 @@ describe('Mesh', function() {
     const bitangents = m.bitangents;
     const normals = m.vertexNormals;
 
-    it('should contain tangents, bitangents and normals with the same length', function() {
+    it('should contain tangents, bitangents and normals with the same length', function () {
       const normalsLength = normals.length;
       expect(tangents).to.have.length(normalsLength);
       expect(bitangents).to.have.length(normalsLength);
@@ -179,7 +179,7 @@ describe('Mesh', function() {
 
         res.push(nx * tx + ny * ty + nz * tz);
       }
-      res.every(i => expect(i).to.be.closeTo(0, 0.01));
+      res.forEach(i => expect(i).to.be.closeTo(0, 0.01));
     });
 
     it('should contain bitangents orthogonal to normals', function () {
@@ -195,7 +195,7 @@ describe('Mesh', function() {
 
         res.push(nx * bx + ny * by + nz * bz);
       }
-      res.every(i => expect(i).to.be.closeTo(0, 0.01));
+      res.forEach(i => expect(i).to.be.closeTo(0, 0.01));
     });
   });
 });

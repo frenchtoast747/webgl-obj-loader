@@ -1,28 +1,29 @@
-path = require('path');
-const webpack = require('webpack');
+const path = require('path');
 
-
-
+const OUTDIR = path.join(__dirname, '/dist');
 
 module.exports = {
+    mode: 'none',
     entry: [
-        path.join(__dirname, '/src/index.js')
+        path.join(__dirname, '/src/index.ts')
     ],
     output: {
-        path: path.join(__dirname, '/dist'),
+        path: OUTDIR,
         publicPath: '/',
         library: 'OBJ',
         libraryTarget: 'umd',
         umdNamedDefine: true,
     },
     module: {
-        loaders: [{
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader'
-        }]
+        rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'awesome-typescript-loader',
+                exclude: /node_modules/,
+            },
+        ]
     },
     resolve: {
-        extensions: ['*', '.js',]
+        extensions: ['.tsx', '.ts', '.js']
     },
 };
