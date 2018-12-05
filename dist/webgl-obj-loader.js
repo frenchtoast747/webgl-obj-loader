@@ -2058,7 +2058,7 @@ function deleteMeshBuffers(gl, mesh) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/aaron/git/webgl-obj-loader/src/index.ts */"./src/index.ts");
+module.exports = __webpack_require__(/*! /home/aaron/google_drive/projects/webgl-obj-loader/src/index.ts */"./src/index.ts");
 
 
 /***/ })
