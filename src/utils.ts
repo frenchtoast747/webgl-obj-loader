@@ -64,12 +64,12 @@ function getMtl(modelOptions: DownloadModelsOptions): string {
 
 export interface DownloadModelsOptions {
     obj: string;
-    mtl: boolean | string;
-    downloadMtlTextures: boolean;
-    mtlTextureRoot: string;
-    name: string;
-    indicesPerMaterial: boolean;
-    calcTangentsAndBitangents: boolean;
+    mtl?: boolean | string;
+    downloadMtlTextures?: boolean;
+    mtlTextureRoot?: string;
+    name?: string;
+    indicesPerMaterial?: boolean;
+    calcTangentsAndBitangents?: boolean;
 }
 
 type ModelPromises = [Promise<string>, Promise<Mesh>, undefined | Promise<MaterialLibrary>];
