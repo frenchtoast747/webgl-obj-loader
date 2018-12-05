@@ -12,7 +12,7 @@
         "coverage": "nyc npm test",
         "coverage:report": "nyc report -r html",
         "prettify": "prettier --write src/**/*.ts",
-        "publish": "npm publish"
+        "publish": "yarn release && npm publish"
     },
     "prettier": {
         "printWidth": 120,
