@@ -28,11 +28,14 @@ information can then be used later on when creating your VBOs. Look at the
 
 #### Element Index
 
-The `indices` attribute is a list of numbers that represent the indices of the above vertex groups. For example, the Nth index, `mesh.indices[N]`, may contain the value `38`. This points to the 39th (zero indexed) element. For Mesh classes, this points to a unique group vertex, normal, and texture values. However, the `vertices`, `normals`, and `textures` attributes are flattened lists of each attributes' components, e.g. the `vertices` list is a repeating pattern of [X, Y, Z, X, Y, Z, ...], so you cannot directly use the element index in order to look up the corresponding vertex position. That is to say `mesh.vertices[38]` does _not_ point to the 39th vertex's X component. The following diagram illustrates how the element index works:
+The `indices` attribute is a list of numbers that represent the indices of the above vertex groups. For example, the Nth index, `mesh.indices[N]`, may contain the value `38`. This points to the 39th (zero indexed) element. For Mesh classes, this points to a unique group vertex, normal, and texture values. However, the `vertices`, `normals`, and `textures` attributes are flattened lists of each attributes' components, e.g. the `vertices` list is a repeating pattern of [X, Y, Z, X, Y, Z, ...], so you cannot directly use the element index in order to look up the corresponding vertex position. That is to say `mesh.vertices[38]` does _not_ point to the 39th vertex's X component. The following diagram illustrates how the element index under the hood:
 
 ![obj loader element index description](https://user-images.githubusercontent.com/1094000/51001179-cf0fb680-14f4-11e9-8bd7-51d4807c3195.png)
 
-And the following is a snippet of code showing how to use the `indices` array in order to index the `verticies` components:
+After describing the attribute data to WebGL via [vertexAttribPointer()](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer), what was once separate array elements in JS is now just one block of data on the graphics card. That block of data in its entirety is considered a single element.
+
+To use the element index in order to index one of the attribute arrays in JS, you will have to mimic this "chunking" of data by taking into account the number of components in an attribute (e.g. a vertex has 3 components; x, y, and z). Have a look at the following code snippet to see how to correctly use the element index
+in order to access an attribute for that index:
 
 ```
 // there are 3 components for a geometric vertex: X, Y, and Z
