@@ -245,24 +245,15 @@ export default class Mesh {
                 becomes:
                   ['16/92/11', '14/101/22', '1/69/1'];
                 */
-                let quad = false;
-                for (let j = 0, eleLen = elements.length; j < eleLen; j++) {
-                    // Triangulating quads
-                    // quad: 'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2 v3/t3/vn3/'
-                    // corresponding triangles:
-                    //      'f v0/t0/vn0 v1/t1/vn1 v2/t2/vn2'
-                    //      'f v2/t2/vn2 v3/t3/vn3 v0/t0/vn0'
-                    if (j === 3 && !quad) {
-                        // add v2/t2/vn2 in again before continuing to 3
-                        j = 2;
-                        quad = true;
-                    }
-                    const hash0 = elements[0] + "," + currentMaterialIndex;
-                    const hash = elements[j] + "," + currentMaterialIndex;
-                    if (hash in unpacked.hashindices) {
-                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
-                    } else {
-                        /*
+
+                const triangles = triangulate(elements);
+                for (const triangle of triangles) {
+                    for (let j = 0, eleLen = triangle.length; j < eleLen; j++) {
+                        const hash = triangle[j] + "," + currentMaterialIndex;
+                        if (hash in unpacked.hashindices) {
+                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
+                        } else {
+                            /*
                         Each element of the face line array is a Vertex which has its
                         attributes delimited by a forward slash. This will separate
                         each attribute into another array:
@@ -276,13 +267,13 @@ export default class Mesh {
                          Think of faces having Vertices which are comprised of the
                          attributes location (v), texture (vt), and normal (vn).
                          */
-                        const vertex = elements[j].split("/");
-                        // it's possible for faces to only specify the vertex
-                        // and the normal. In this case, vertex will only have
-                        // a length of 2 and not 3 and the normal will be the
-                        // second item in the list with an index of 1.
-                        const normalIndex = vertex.length - 1;
-                        /*
+                            const vertex = elements[j].split("/");
+                            // it's possible for faces to only specify the vertex
+                            // and the normal. In this case, vertex will only have
+                            // a length of 2 and not 3 and the normal will be the
+                            // second item in the list with an index of 1.
+                            const normalIndex = vertex.length - 1;
+                            /*
                          The verts, textures, and vertNormals arrays each contain a
                          flattend array of coordinates.
 
@@ -301,34 +292,31 @@ export default class Mesh {
 
                          This same process is repeated for verts and textures.
                          */
-                        // Vertex position
-                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);
-                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
-                        unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
-                        // Vertex textures
-                        if (textures.length) {
-                            const stride = options.enableWTextureCoord ? 3 : 2;
-                            unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);
-                            unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);
-                            if (options.enableWTextureCoord) {
-                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);
+                            // Vertex position
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 0]);
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 1]);
+                            unpacked.verts.push(+verts[(+vertex[0] - 1) * 3 + 2]);
+                            // Vertex textures
+                            if (textures.length) {
+                                const stride = options.enableWTextureCoord ? 3 : 2;
+                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 0]);
+                                unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 1]);
+                                if (options.enableWTextureCoord) {
+                                    unpacked.textures.push(+textures[(+vertex[1] - 1) * stride + 2]);
+                                }
                             }
+                            // Vertex normals
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);
+                            unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);
+                            // Vertex material indices
+                            unpacked.materialIndices.push(currentMaterialIndex);
+                            // add the newly created Vertex to the list of indices
+                            unpacked.hashindices[hash] = unpacked.index;
+                            unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
+                            // increment the counter
+                            unpacked.index += 1;
                         }
-                        // Vertex normals
-                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 0]);
-                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 1]);
-                        unpacked.norms.push(+vertNormals[(+vertex[normalIndex] - 1) * 3 + 2]);
-                        // Vertex material indices
-                        unpacked.materialIndices.push(currentMaterialIndex);
-                        // add the newly created Vertex to the list of indices
-                        unpacked.hashindices[hash] = unpacked.index;
-                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash]);
-                        // increment the counter
-                        unpacked.index += 1;
-                    }
-                    if (j === 3 && quad) {
-                        // add v0/t0/vn0 onto the second triangle
-                        unpacked.indices[currentObjectByMaterialIndex].push(unpacked.hashindices[hash0]);
                     }
                 }
             }
@@ -765,6 +753,19 @@ export default class Mesh {
             // Put the material into the materialsByIndex object at the right
             // spot as determined when the obj file was parsed
             this.materialsByIndex[materialIndex] = material;
+        }
+    }
+}
+
+function* triangulate(elements: string[]) {
+    if (elements.length <= 3) {
+        yield elements;
+    } else if (elements.length === 4) {
+        yield [elements[0], elements[1], elements[2]];
+        yield [elements[2], elements[3], elements[0]];
+    } else {
+        for (let i = 0; i < elements.length - 1; i++) {
+            yield [elements[0], elements[i], elements[i + 1]];
         }
     }
 }
