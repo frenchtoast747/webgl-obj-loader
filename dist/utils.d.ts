@@ -1,12 +1,12 @@
 import Mesh from "./mesh";
 export interface DownloadModelsOptions {
     obj: string;
-    mtl: boolean | string;
-    downloadMtlTextures: boolean;
-    mtlTextureRoot: string;
-    name: string;
-    indicesPerMaterial: boolean;
-    calcTangentsAndBitangents: boolean;
+    mtl?: boolean | string;
+    downloadMtlTextures?: boolean;
+    mtlTextureRoot?: string;
+    name?: string;
+    indicesPerMaterial?: boolean;
+    calcTangentsAndBitangents?: boolean;
 }
 export declare type MeshMap = {
     [name: string]: Mesh;
