@@ -2,7 +2,7 @@ import Mesh, { MeshOptions, MaterialNameToIndex, IndexToMaterial, ArrayBufferWit
 import { Material, MaterialLibrary, Vec3, UVW, TextureMapData } from "./material";
 import { Layout, TYPES, AttributeInfo, DuplicateAttributeException, Attribute } from "./layout";
 import { downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers, DownloadModelsOptions, MeshMap, NameAndUrls, ExtendedGLBuffer, MeshWithBuffers } from "./utils";
-declare const version = "1.1.3";
+declare const version = "2.0.3";
 /**
  * @namespace
  */
