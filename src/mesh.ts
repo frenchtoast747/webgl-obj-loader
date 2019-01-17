@@ -764,7 +764,7 @@ function* triangulate(elements: string[]) {
         yield [elements[0], elements[1], elements[2]];
         yield [elements[2], elements[3], elements[0]];
     } else {
-        for (let i = 0; i < elements.length - 1; i++) {
+        for (let i = 1; i < elements.length - 1; i++) {
             yield [elements[0], elements[i], elements[i + 1]];
         }
     }
