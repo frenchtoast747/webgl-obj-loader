@@ -37,7 +37,7 @@ After describing the attribute data to WebGL via [vertexAttribPointer()](https:/
 To use the element index in order to index one of the attribute arrays in JS, you will have to mimic this "chunking" of data by taking into account the number of components in an attribute (e.g. a vertex has 3 components; x, y, and z). Have a look at the following code snippet to see how to correctly use the element index
 in order to access an attribute for that index:
 
-```
+```javascript
 // there are 3 components for a geometric vertex: X, Y, and Z
 const NUM_COMPONENTS_FOR_VERTS = 3;
 elementIdx = mesh.indices[SOME_IDX]; // e.g. 38
