@@ -21,9 +21,30 @@ information can then be used later on when creating your VBOs. Look at the
 
 ### Attributes:
 * **vertices:** an array containing the vertex values that correspond to each unique face index. The array is flat in that each vertex's component is an element of the array. For example: with `verts = [1, -1, 1, ...]`, `verts[0] is x`, `verts[1] is y`, and `verts[2] is z`. Continuing on, `verts[3]` would be the beginning of the next vertex: its x component. This is in preparation for using `gl.ELEMENT_ARRAY_BUFFER` for the `gl.drawElements` call.
+  * Note that the `vertices` attribute is the [Geometric Vertex](https://en.wikipedia.org/wiki/Wavefront_.obj_file#Geometric_vertex) and denotes the position in 3D space.
 * **vertexNormals:** an array containing the vertex normals that correspond to each unique face index. It is flat, just like `vertices`.
 * **textures:** an array containing the `s` and `t` (or `u` and `v`) coordinates for this mesh's texture. It is flat just like `vertices` except it goes by groups of 2 instead of 3.
-* **indices:** an array containing the indicies to be used in conjunction with the above three arrays in order to draw the triangles that make up faces. For example, `indices[42]` could contain the number `38`. This would then be used internally by WebGL on all three of the above arrays telling which vertex, normal, and texture coords to use: `vertices[38]`, `vertexNormals[38]`, and `textures[38]`.
+* **indices:** an array containing the indicies to be used in conjunction with the above three arrays in order to draw the triangles that make up faces. See below for more information on element indices.
+
+#### Element Index
+
+The `indices` attribute is a list of numbers that represent the indices of the above vertex groups. For example, the Nth index, `mesh.indices[N]`, may contain the value `38`. This points to the 39th (zero indexed) element. For Mesh classes, this points to a unique group vertex, normal, and texture values. However, the `vertices`, `normals`, and `textures` attributes are flattened lists of each attributes' components, e.g. the `vertices` list is a repeating pattern of [X, Y, Z, X, Y, Z, ...], so you cannot directly use the element index in order to look up the corresponding vertex position. That is to say `mesh.vertices[38]` does _not_ point to the 39th vertex's X component. The following diagram illustrates how the element index works:
+
+![obj loader element index description](https://user-images.githubusercontent.com/1094000/51001179-cf0fb680-14f4-11e9-8bd7-51d4807c3195.png)
+
+And the following is a snippet of code showing how to use the `indices` array in order to index the `verticies` components:
+
+```
+// there are 3 components for a geometric vertex: X, Y, and Z
+const NUM_COMPONENTS_FOR_VERTS = 3;
+elementIdx = mesh.indices[SOME_IDX]; // e.g. 38
+// in order to get the X component of the vertex component of element "38"
+elementVertX = mesh.vertices[(elementIdx * NUM_COMPONENTS_FOR_VERTS) + 0]
+// in order to get the Y component of the vertex component of element "38"
+elementVertY = mesh.vertices[(elementIdx * NUM_COMPONENTS_FOR_VERTS) + 1]
+// in order to get the Z component of the vertex component of element "38"
+elementVertZ = mesh.vertices[(elementIdx * NUM_COMPONENTS_FOR_VERTS) + 2]
+```
 
 ### Params:
 
