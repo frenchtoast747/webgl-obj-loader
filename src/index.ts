@@ -19,7 +19,7 @@ import {
     MeshWithBuffers,
 } from "./utils";
 
-const version = "1.1.3";
+const version = "2.0.3";
 
 /**
  * @namespace

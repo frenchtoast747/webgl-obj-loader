@@ -243,6 +243,11 @@ http://frenchtoast747.github.com/webgl-obj-loader/
 This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh-pages` inside of the webgl-obj-loader directory to see how the OBJ loader is used in a project.
 
 ## ChangeLog
+**2.0.3**
+* Add simple support for N-Gons.
+  * This uses a very elementary algorithm to triangulate N-gons, but should still produce a full mesh.
+    * Any help to create a better triangulation algorithm would be greatly appreciated! Please create a [pull request](https://github.com/frenchtoast747/webgl-obj-loader/pulls).
+
 **2.0.0**
 * Updated to TypeScript
 * Breaking change: the Mesh option `indicesPerMaterial` has been removed in favor of always providing the indices per material.
