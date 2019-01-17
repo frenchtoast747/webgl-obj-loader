@@ -244,7 +244,7 @@ This demo is the same thing inside of the gh-pages branch. Do a `git checkout gh
 
 ## ChangeLog
 **2.0.3**
-* Add simple support for N-Gons.
+* Add simple support for N-Gons (thanks [qtip](https://github.com/qtip)!)
   * This uses a very elementary algorithm to triangulate N-gons, but should still produce a full mesh.
     * Any help to create a better triangulation algorithm would be greatly appreciated! Please create a [pull request](https://github.com/frenchtoast747/webgl-obj-loader/pulls).
 
