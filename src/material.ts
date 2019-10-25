@@ -583,7 +583,7 @@ export class MaterialLibrary {
         }
 
         const options = this.parseOptions(optionsString);
-        options.filename = filename;
+        options.filename = filename.replace(/\\/g, "/");
 
         return options;
     }

@@ -169,5 +169,32 @@ describe('MaterialLibrary', function () {
                 expect(material.mapDisplacement.colorCorrection).to.be.true;
                 expect(material.mapDecal.filename).to.be.equal('file.jpg');
             });
+
+        it('should parse the filename paths correctly and normalize the path separators',
+            function () {
+                let m = new MaterialLibrary(
+                    `
+                newmtl my_material
+                map_Ka -cc on -blendu off -blendv off path\\to\\ambient.jpg
+                map_Kd -boost 123 -mm 1 2 filename.jpg
+                map_Ks -o 1 other.jpg
+                map_Ke -s 2 3 too.jpg
+                map_Ns -t 4 5 6 lol.jpg
+                refl -bm 42 -imfchan r -type sphere texture.jpg
+                map_d -clamp on filename.jpg
+                map_aat on
+                # throwing in both so both functions get coverage
+                map_bump -texres 1024 path/to/file.jpg
+                bump -texres 1024 file.jpg
+                disp path\\to/displacement.jpg -cc on
+                decal file.jpg
+                `
+                );
+                let material = m.materials.my_material;
+
+                expect(material.mapAmbient.filename).to.be.equal('path/to/ambient.jpg');
+                expect(material.mapDisplacement.filename).to.be.equal('path/to/displacement.jpg');
+                expect(material.mapDecal.filename).to.be.equal('file.jpg');
+            });
     });
 });
