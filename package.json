@@ -53,8 +53,6 @@
         "babel-preset-env": "^1.6.1",
         "babel-preset-stage-3": "^6.24.1",
         "chai": "^4.1.2",
-        "eslint": "^6.6.0",
-        "eslint-config-google": "^0.14.0",
         "mocha": "6.2.2",
         "nyc": "^14.1.1",
         "prettier": "1.18.2",
