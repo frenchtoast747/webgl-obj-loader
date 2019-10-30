@@ -267,7 +267,7 @@ export default class Mesh {
                          Think of faces having Vertices which are comprised of the
                          attributes location (v), texture (vt), and normal (vn).
                          */
-                            const vertex = elements[j].split("/");
+                            const vertex = triangle[j].split("/");
                             // it's possible for faces to only specify the vertex
                             // and the normal. In this case, vertex will only have
                             // a length of 2 and not 3 and the normal will be the
