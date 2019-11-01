@@ -25,10 +25,9 @@ function downloadMtlTextures(mtl: MaterialLibrary, root: string) {
 
         for (const attr of mapAttributes) {
             const mapData = (material as any)[attr] as TextureMapData;
-            if (!mapData) {
+            if (!mapData || !mapData.filename) {
                 continue;
             }
-
             const url = root + mapData.filename;
             textures.push(
                 fetch(url)
