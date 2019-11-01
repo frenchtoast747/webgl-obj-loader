@@ -76,5 +76,6 @@ export default class Mesh {
      */
     makeBufferData(layout: Layout): ArrayBufferWithItemSize;
     makeIndexBufferData(): Uint16ArrayWithItemSize;
+    makeIndexBufferDataForMaterials(...materialIndices: Array<number>): Uint16ArrayWithItemSize;
     addMaterialLibrary(mtl: MaterialLibrary): void;
 }
