@@ -738,8 +738,10 @@ export default class Mesh {
         return buffer;
     }
 
-    makeIndexBufferDataForMaterials(...materialIndices : Array<number>): Uint16ArrayWithItemSize {
-        const indices : number[] = new Array<number>().concat(...materialIndices.map((mtlIdx) => this.indicesPerMaterial[mtlIdx]));
+    makeIndexBufferDataForMaterials(...materialIndices: Array<number>): Uint16ArrayWithItemSize {
+        const indices: number[] = new Array<number>().concat(
+            ...materialIndices.map(mtlIdx => this.indicesPerMaterial[mtlIdx]),
+        );
         const buffer: Uint16ArrayWithItemSize = new Uint16Array(indices);
         buffer.numItems = indices.length;
         return buffer;

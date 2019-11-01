@@ -63,7 +63,7 @@ export class Attribute {
      *        For type "FLOAT", this parameter has no effect.
      */
     constructor(public key: string, public size: number, public type: TYPES, public normalized: boolean = false) {
-        switch(type) {
+        switch (type) {
             case "BYTE":
             case "UNSIGNED_BYTE":
                 this.sizeOfType = 1;
