@@ -1,9 +1,9 @@
 export enum TYPES {
-    "BYTE" = 1,
-    "UNSIGNED_BYTE" = 1,
-    "SHORT" = 2,
-    "UNSIGNED_SHORT" = 2,
-    "FLOAT" = 4,
+    "BYTE" = "BYTE",
+    "UNSIGNED_BYTE" = "UNSIGNED_BYTE",
+    "SHORT" = "SHORT",
+    "UNSIGNED_SHORT" = "UNSIGNED_SHORT",
+    "FLOAT" = "FLOAT",
 }
 
 export interface AttributeInfo {
@@ -63,7 +63,21 @@ export class Attribute {
      *        For type "FLOAT", this parameter has no effect.
      */
     constructor(public key: string, public size: number, public type: TYPES, public normalized: boolean = false) {
-        this.sizeOfType = this.type;
+        switch(type) {
+            case "BYTE":
+            case "UNSIGNED_BYTE":
+                this.sizeOfType = 1;
+                break;
+            case "SHORT":
+            case "UNSIGNED_SHORT":
+                this.sizeOfType = 2;
+                break;
+            case "FLOAT":
+                this.sizeOfType = 4;
+                break;
+            default:
+                throw new Error(`Unknown gl type: ${type}`);
+        }
         this.sizeInBytes = this.sizeOfType * size;
     }
 }

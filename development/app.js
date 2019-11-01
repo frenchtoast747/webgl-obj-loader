@@ -127,7 +127,7 @@ function initShaders() {
             }
             const layoutKey = attrs[attrName];
             if (shaderProgram.attrIndices[attrName] != -1) {
-                const attr = layout[layoutKey];
+                const attr = layout.attributeMap[layoutKey];
                 gl.vertexAttribPointer(
                     shaderProgram.attrIndices[attrName],
                     attr.size,
@@ -203,7 +203,7 @@ function initBuffers() {
         // Create the index buffer for this mesh
         var indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        var indexData = app.meshes[mesh].makeIndexBufferData();
+        var indexData = app.meshes[mesh].makeIndexBufferDataForMaterials(...Object.values(app.meshes[mesh].materialIndices));
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
         indexBuffer.numItems = indexData.numItems;
         app.meshes[mesh].indexBuffer = indexBuffer;
