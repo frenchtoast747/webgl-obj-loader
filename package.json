@@ -1,8 +1,9 @@
 {
     "name": "webgl-obj-loader",
-    "version": "2.0.6",
+    "version": "2.0.7",
     "description": "A simple OBJ model loader to help facilitate the learning of WebGL",
     "main": "dist/webgl-obj-loader.min.js",
+    "module": "dist/webgl-obj-loader.min.js",
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "webpack --config webpack.dev.js",

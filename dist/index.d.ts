@@ -3,6 +3,20 @@ import { Material, MaterialLibrary, Vec3, UVW, TextureMapData } from "./material
 import { Layout, TYPES, AttributeInfo, DuplicateAttributeException, Attribute } from "./layout";
 import { downloadModels, downloadMeshes, initMeshBuffers, deleteMeshBuffers, DownloadModelsOptions, MeshMap, NameAndUrls, ExtendedGLBuffer, MeshWithBuffers } from "./utils";
 declare const version = "2.0.3";
+export declare const OBJ: {
+    Attribute: typeof Attribute;
+    DuplicateAttributeException: typeof DuplicateAttributeException;
+    Layout: typeof Layout;
+    Material: typeof Material;
+    MaterialLibrary: typeof MaterialLibrary;
+    Mesh: typeof Mesh;
+    TYPES: typeof TYPES;
+    downloadModels: typeof downloadModels;
+    downloadMeshes: typeof downloadMeshes;
+    initMeshBuffers: typeof initMeshBuffers;
+    deleteMeshBuffers: typeof deleteMeshBuffers;
+    version: string;
+};
 /**
  * @namespace
  */

@@ -8,7 +8,6 @@ module.exports = {
     output: {
         path: OUTDIR,
         publicPath: "/",
-        library: "OBJ",
         libraryTarget: "umd",
         umdNamedDefine: true,
         // it seems as though outputting `umd` should not dump `window`,

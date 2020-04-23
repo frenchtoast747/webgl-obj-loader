@@ -21,6 +21,21 @@ import {
 
 const version = "2.0.3";
 
+export const OBJ = {
+    Attribute,
+    DuplicateAttributeException,
+    Layout,
+    Material,
+    MaterialLibrary,
+    Mesh,
+    TYPES,
+    downloadModels,
+    downloadMeshes,
+    initMeshBuffers,
+    deleteMeshBuffers,
+    version,
+};
+
 /**
  * @namespace
  */
